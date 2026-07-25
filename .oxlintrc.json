@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  //
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc"
+    // "import",
+    // "jsdoc",
+    // "node",
+    // "promise",
+    // "vitest",
+    // "vue",
+  ],
+  //
+  "options": {
+    "typeAware": true
+    // "typeCheck": true,
+    // "maxWarnings": 10,
+  },
+  //
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "perf": "error",
+    "style": "error",
+    "restriction": "error"
+  },
+  //
+  "rules": {},
+  //
+  "env": {
+    "builtin": true
+  }
+}

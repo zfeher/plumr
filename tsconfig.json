@@ -1,0 +1,42 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  //
+  "compilerOptions": {
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true,
+    //
+    // @tsconfig/node24
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Error",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ],
+    "module": "nodenext",
+    "target": "es2024",
+    "moduleResolution": "node16",
+    //
+    // @tsconfig/node-ts
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    //
+    // @tsconfig/strictest
+    "strict": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
