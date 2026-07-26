@@ -28,7 +28,18 @@
     "restriction": "error"
   },
   //
-  "rules": {},
+  "rules": {
+    "capitalized-comments": "off",
+    "func-style": "off",
+    "max-statements": "off",
+    "no-console": "off",
+    "no-magic-numbers": "off",
+    "no-use-before-define": ["error", { "functions": false }],
+    "sort-imports": "off",
+    "sort-keys": "off",
+    //
+    "unicorn/no-array-reduce": "off"
+  },
   //
   "env": {
     "builtin": true
