@@ -1,12 +1,12 @@
 {
-  "name": "lgmedia",
+  "name": "plumr",
   "version": "0.1.0",
-  "description": "LG Media Converter",
+  "description": "Plumr video converter",
   "keywords": [
     "converter",
     "dolby vision",
-    "lg",
-    "media"
+    "media",
+    "video"
   ],
   "license": "ISC",
   "author": "zfeher",

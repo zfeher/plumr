@@ -14,7 +14,7 @@ await main();
 
 async function main(): Promise<void> {
   console.log();
-  console.log(`LG Media v${pkgJson.version}`);
+  console.log(`Plumr v${pkgJson.version}`);
 
   const { values } = parseArgs({ options: getParseArgsOptions() });
   const hasInputOption = "input" in values;
@@ -62,15 +62,15 @@ async function main(): Promise<void> {
 
 function printHelp(): void {
   console.log();
-  console.log("Usage: lgmedia [options]");
+  console.log("Usage: plumr [options]");
   console.log();
   console.log("Options:");
 
   const options = [
     ["-h, --help", "Show this help message"],
     ["-i, --input", "Input video file or folder containing video files (required)"],
-    ["-o, --output", "Output video file or folder (default: T:/__watch_list__/__lgmedia__)"],
-    ["-t, --temp-folder", "Temp folder (default: T:/temp/lgmedia)"],
+    ["-o, --output", "Output video file or folder (default: T:/__watch_list__/__plumr__)"],
+    ["-t, --temp-folder", "Temp folder (default: T:/temp/plumr)"],
     [
       "--mp4box-mode",
       `mp4box mode (default: ${DEFAULT_MP4BOX_MODE}, all: ${MP4BOX_MODE_IMPORT_SELECTED_ONLY}, ${MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE}, ${MP4BOX_MODE_DEMUX_ALL})`,
@@ -100,13 +100,13 @@ function getParseArgsOptions(): ParseArgsOptionsConfig {
     output: {
       type: "string",
       short: "o",
-      default: "T:/__watch_list__/__lgmedia__",
+      default: "T:/__watch_list__/__plumr__",
     },
 
     "temp-folder": {
       type: "string",
       short: "t",
-      default: "T:/temp/lgmedia",
+      default: "T:/temp/plumr",
     },
 
     "mp4box-mode": {
