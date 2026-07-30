@@ -12,6 +12,7 @@ import {
   getTrackExtension,
   hasItems,
   isDolbyVision,
+  assertIsDefined,
 } from "./common.ts";
 
 export function getMp4boxImportAllAndRemoveCommands({
@@ -44,8 +45,7 @@ export function getMp4boxImportAllAndRemoveCommands({
     // todo: this is clearly duplicate
     const extractTracksOptions = convertibleAudio.map((track) => {
       const meta = tracksMeta.get(track);
-      // todo: better way?
-      if (!meta) throw new Error("This should not happen :)");
+      assertIsDefined(meta);
 
       // note: TIDs of mkvextract starts from 0 whereas mediainfo id starts from 1
       //  streamOrder starts from 0 probably can be used but needs some checking, experience
@@ -87,8 +87,7 @@ export function getMp4boxImportAllAndRemoveCommands({
   // todo: alternative could be traversing tracksMeta
   for (const track of convertibleAudio) {
     const meta = tracksMeta.get(track);
-    // todo: better way?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     commands.push(`eac3to "${meta.extractedFile}" "${meta.convertedFile}" -down6 -640`);
 
@@ -133,8 +132,7 @@ export function getMp4boxImportAllAndRemoveCommands({
   const newIdOffset = lastTrack ? lastTrack.id + (mediaInfo.hasMenu ? 1 : 0) : 0;
   const addFlags = convertibleAudio.flatMap((track, index) => {
     const meta = tracksMeta.get(track);
-    // todo: better way? assertIsNotNil?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     const { convertedFile } = meta;
     const expectedId = newIdOffset + 1 + index;

@@ -8,6 +8,7 @@ import {
   mp4BoxDvheFlags,
 } from "./constants.ts";
 import {
+  assertIsDefined,
   getTrackExtension,
   hasItems,
   isAudioNeedsConversionForTv,
@@ -96,8 +97,7 @@ export function getMp4boxImportSelectedOnlyCommands({
   // todo: alternative could be traversing tracksMeta
   for (const track of convertibleAudio) {
     const meta = tracksMeta.get(track);
-    // todo: better way?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     commands.push(`eac3to "${meta.extractedFile}" "${meta.convertedFile}" -down6 -640`);
 

@@ -224,7 +224,7 @@ function getSupportedVideoTracksByTv(tracks: readonly Track[]): Video | undefine
   ) as Video[]; // todo: better way?
 
   if (video.length > 1) {
-    // todo: better way?
+    // todo: better way? assertLengthEq1?
     // todo: warn user if multiple video track found vs check what can mp4 support?
     throw new Error("This should not happen usually :)");
   }
@@ -288,13 +288,31 @@ export function isSubtitleTrack(track: Track): track is Subtitle {
 
 export function getTrackExtension(track: Track): string {
   const extension = formatToExtensionMap.get(track.format);
-  // todo: better way?
-  if (!extension) {
+  assertIsDefined(
+    extension,
+    `Unsupported track format (${track.format}) so cannot figure out the extension 😔`,
+  );
+  return extension;
+}
+
+export function assertIsDefined<T>(
+  value: T,
+  message?: string,
+): asserts value is Exclude<T, null | undefined> {
+  if (value === null || value === undefined) {
     throw new Error(
-      `Unsupported track format (${track.format}) so cannot figure out the extension 😔`,
+      message ??
+        `Expected 'value' to be not Nil (null | undefined), but received ${JSON.stringify(value)}`,
     );
   }
-  return extension;
+}
+
+export function isDefined<T>(value: T): value is Exclude<T, null | undefined> {
+  return value !== null && value !== undefined;
+}
+
+export function isNil(value: unknown): value is null | undefined {
+  return value === null || value === undefined;
 }
 
 export function isEmpty(arr: readonly unknown[]): boolean {

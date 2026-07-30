@@ -4,6 +4,7 @@ import type { Audio, MediaInfo, Subtitle, Track } from "./types.ts";
 import { EXTENSION_AC3, EXTENSION_MKV } from "./constants.ts";
 
 import {
+  assertIsDefined,
   getTrackExtension,
   hasItems,
   isAudioNeedsConversionForTv,
@@ -44,8 +45,7 @@ export function getMkvmergeCommands({
     // todo: this is clearly duplicate
     const extractTracksOptions = convertibleAudio.map((track) => {
       const meta = tracksMeta.get(track);
-      // todo: better way?
-      if (!meta) throw new Error("This should not happen :)");
+      assertIsDefined(meta);
 
       // note: TIDs of mkvextract starts from 0 whereas mediainfo id starts from 1
       //  streamOrder starts from 0 probably can be used but needs some checking, experience
@@ -86,8 +86,7 @@ export function getMkvmergeCommands({
   // todo: alternative could be traversing tracksMeta
   for (const track of convertibleAudio) {
     const meta = tracksMeta.get(track);
-    // todo: better way? assertIsNotNil?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     commands.push(`eac3to "${meta.extractedFile}" "${meta.convertedFile}" -down6 -640`);
 
@@ -129,8 +128,7 @@ export function getMkvmergeCommands({
   // note: here we rely on that only convertible audio is extracted and converted
   const externalFlags = convertibleAudio.flatMap((track) => {
     const meta = tracksMeta.get(track);
-    // todo: better way? assertIsNotNil?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     // note: this one is tricky because the options are input specific and TID
     //  means a track id in that input (here an audio where that is 0)

@@ -17,6 +17,7 @@ import {
   none,
   isAlreadySupportedByTv,
   isThreeLetterLanguageCode,
+  assertIsDefined,
 } from "./common.ts";
 
 import { getMediaInfo } from "./getMediaInfo.ts";
@@ -179,8 +180,7 @@ async function convertSingleMedia(
 
   const selectedTracks = selectedTrackIds.map((trackId) => {
     const infoTrack = mediaInfo.tracks.find((track) => track.id === trackId);
-    // todo: better way? assertIsNotNil?
-    if (!infoTrack) throw new Error("This should not happen :)");
+    assertIsDefined(infoTrack);
     return infoTrack;
   });
 

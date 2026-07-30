@@ -13,6 +13,7 @@ import {
   getTrackExtension,
   hasItems,
   isDolbyVision,
+  assertIsDefined,
 } from "./common.ts";
 
 export function getMp4boxDemuxAllCommands({
@@ -46,8 +47,7 @@ export function getMp4boxDemuxAllCommands({
   // todo: this is clean duplicate
   const extractTracksOptions = selectedTracks.map((track) => {
     const meta = tracksMeta.get(track);
-    // todo: better way? asssertIsNotNil?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     // note: TIDs of mkvextract starts from 0 whereas mediainfo id starts from 1
     //  streamOrder starts from 0 probably can be used but needs some checking, experience
@@ -89,8 +89,7 @@ export function getMp4boxDemuxAllCommands({
 
   for (const track of convertibleAudio) {
     const meta = tracksMeta.get(track);
-    // todo: better way?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     commands.push(`eac3to "${meta.extractedFile}" "${meta.convertedFile}" -down6 -640`);
 
@@ -116,8 +115,7 @@ export function getMp4boxDemuxAllCommands({
   // for dvhe
   const addFlags = selectedTracks.flatMap((track, index) => {
     const meta = tracksMeta.get(track);
-    // todo: better way? assertIsNotNil?
-    if (!meta) throw new Error("This should not happen :)");
+    assertIsDefined(meta);
 
     const file = meta.convertedFile ?? meta.extractedFile;
     const { language } = track;
