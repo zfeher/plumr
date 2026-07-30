@@ -19,8 +19,8 @@ import {
 
 export function getMp4boxImportSelectedOnlyCommands({
   inputFile,
-  outputDirectory,
-  tempDirectory,
+  outputFolder,
+  tempFolder,
   mediaInfo,
   selectedTracks,
   video,
@@ -31,7 +31,7 @@ export function getMp4boxImportSelectedOnlyCommands({
   // todo: these feels duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
 
-  const tempMediaDir = path.join(tempDirectory, mediaDir);
+  const tempMediaDir = path.join(tempFolder, mediaDir);
 
   // todo: using WeakMap again?
   const tracksMeta = selectedTracks.reduce((acc, track) => {
@@ -160,13 +160,13 @@ export function getMp4boxImportSelectedOnlyCommands({
   });
 
   // note: execFile doesn't like "" wrapping
-  const tempFlag = ["-tmp", `"${tempDirectory}"`];
+  const tempFlag = ["-tmp", `"${tempFolder}"`];
 
   const outputFileName = path
     .basename(inputFile)
     .replace(`.${mediaInfo.general.fileExtension}`, `.${EXTENSION_MP4}`);
 
-  const outputFile = path.join(outputDirectory, outputFileName);
+  const outputFile = path.join(outputFolder, outputFileName);
   // note: execFile doesn't like "" wrapping
   const outputFlag = ["-new", `"${outputFile}"`];
 
@@ -220,8 +220,8 @@ interface TrackMeta {
 
 interface GetMp4boxImportSelectedOnlyCommandsParams {
   readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
+  readonly outputFolder: string;
+  readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
   readonly video: Video;

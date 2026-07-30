@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import fss from "node:fs";
 import path from "node:path";
 
 import type { Audio, MediaInfo, Subtitle, Track, Video } from "./types.ts";
@@ -41,22 +42,28 @@ const mp4boxMethod: Mp4BoxMethod = MP4BOX_METHOD_IMPORT_SELECTED_ONLY;
 export async function convertMedia(options: ConvertMediaParams): Promise<ConvertMediaResponse> {
   const { selectedTrackIds } = options;
   // todo: for now we remove "" wrapper ahead and see if it will be a problem
-  const inputFile = options.inputFile.replace(/^['"]/u, "").replace(/['"]$/u, "");
-  let outputDirectory = options.outputDirectory.replace(/^['"]/u, "").replace(/['"]$/u, "");
-  const tempDirectory = options.tempDirectory.replace(/^['"]/u, "").replace(/['"]$/u, "");
+  const input = options.input.replace(/^['"]/u, "").replace(/['"]$/u, "");
+  let outputFolder = options.output.replace(/^['"]/u, "").replace(/['"]$/u, "");
+  const tempFolder = options.tempFolder.replace(/^['"]/u, "").replace(/['"]$/u, "");
 
-  const inputFileStat = await fs.stat(inputFile);
-  const inputIsDirectory = inputFileStat.isDirectory();
+  if (!fss.existsSync(input)) {
+    console.error(`[ERROR]: input file or folder does not exist: ${input}`);
+    console.log();
+    process.exit(1);
+  }
+
+  const inputStat = await fs.stat(input);
+  const inputIsDirectory = inputStat.isDirectory();
 
   const commands: string[] = [];
   const errors: string[] = [];
   const warnings: string[] = [];
 
   if (inputIsDirectory) {
-    outputDirectory = path.join(outputDirectory, path.basename(inputFile));
+    outputFolder = path.join(outputFolder, path.basename(input));
 
     // todo: extract this like single case (SLA :D)
-    const dirEntries = await fs.readdir(inputFile, {
+    const dirEntries = await fs.readdir(input, {
       encoding: "utf8",
       withFileTypes: true,
     });
@@ -80,8 +87,8 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
       // oxlint-disable-next-line no-await-in-loop - fine for this use case
       const result = await convertSingleMedia({
         inputFile: mkvFile,
-        outputDirectory,
-        tempDirectory,
+        outputFolder,
+        tempFolder,
       });
 
       if (result.isAlreadySupported) {
@@ -99,9 +106,9 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
     // input is a single file
 
     const result = await convertSingleMedia({
-      inputFile,
-      outputDirectory,
-      tempDirectory,
+      inputFile: input,
+      outputFolder,
+      tempFolder,
       selectedTrackIds,
     });
 
@@ -127,11 +134,11 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
 
     const filenameNoExt = inputIsDirectory
       ? "convert"
-      : path.basename(inputFile).replace(path.extname(inputFile), "");
+      : path.basename(input).replace(path.extname(input), "");
 
     const batchOutputFile = inputIsDirectory
-      ? path.join(inputFile, `${filenameNoExt}.bat`)
-      : path.join(path.dirname(inputFile), `convert-${filenameNoExt}.bat`);
+      ? path.join(input, `${filenameNoExt}.bat`)
+      : path.join(path.dirname(input), `convert-${filenameNoExt}.bat`);
 
     await fs.writeFile(batchOutputFile, commands.join("\n"), "utf8");
 
@@ -148,7 +155,7 @@ async function convertSingleMedia(
 ): Promise<ConvertSingleMediaResponse> {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const { inputFile, outputDirectory, tempDirectory } = options;
+  const { inputFile, outputFolder, tempFolder } = options;
   let { selectedTrackIds } = options;
 
   // todo: use some cache for media info to avoid some wait twice ;)
@@ -319,8 +326,8 @@ async function convertSingleMedia(
     commands = isDolbyVision(video)
       ? getMp4boxCommands({
           inputFile,
-          outputDirectory,
-          tempDirectory,
+          outputFolder,
+          tempFolder,
           mediaInfo,
           selectedTracks,
           video,
@@ -328,8 +335,8 @@ async function convertSingleMedia(
         })
       : getMkvmergeCommands({
           inputFile,
-          outputDirectory,
-          tempDirectory,
+          outputFolder,
+          tempFolder,
           mediaInfo,
           selectedTracks,
           audio,
@@ -357,8 +364,8 @@ async function convertSingleMedia(
 
 function getMp4boxCommands({
   inputFile,
-  outputDirectory,
-  tempDirectory,
+  outputFolder,
+  tempFolder,
   mediaInfo,
   selectedTracks,
   video,
@@ -368,8 +375,8 @@ function getMp4boxCommands({
   if (mp4boxMethod === MP4BOX_METHOD_IMPORT_SELECTED_ONLY) {
     return getMp4boxImportSelectedOnlyCommands({
       inputFile,
-      outputDirectory,
-      tempDirectory,
+      outputFolder,
+      tempFolder,
       mediaInfo,
       selectedTracks,
       video,
@@ -380,8 +387,8 @@ function getMp4boxCommands({
   if (mp4boxMethod === MP4BOX_METHOD_IMPORT_ALL_THEN_REMOVE) {
     return getMp4boxImportAllAndRemoveCommands({
       inputFile,
-      outputDirectory,
-      tempDirectory,
+      outputFolder,
+      tempFolder,
       mediaInfo,
       selectedTracks,
       video,
@@ -393,8 +400,8 @@ function getMp4boxCommands({
   if (mp4boxMethod === MP4BOX_METHOD_DEMUX_ALL) {
     return getMp4boxDemuxAllCommands({
       inputFile,
-      outputDirectory,
-      tempDirectory,
+      outputFolder,
+      tempFolder,
       mediaInfo,
       selectedTracks,
       video,
@@ -407,8 +414,8 @@ function getMp4boxCommands({
 
 interface GetMp4boxCommandsParams {
   readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
+  readonly outputFolder: string;
+  readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
   readonly video: Video;
@@ -418,9 +425,9 @@ interface GetMp4boxCommandsParams {
 // todo: better way, reuse ConvertMediaParams somehow?
 interface ConvertSingleMediaParams {
   readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
-  readonly selectedTrackIds?: readonly number[];
+  readonly outputFolder: string;
+  readonly tempFolder: string;
+  readonly selectedTrackIds?: readonly number[] | undefined;
 }
 
 type ConvertSingleMediaResponse =
@@ -450,10 +457,10 @@ interface ConvertSingleMediaResponseBase {
 }
 
 interface ConvertMediaParams {
-  readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
-  readonly selectedTrackIds: readonly number[];
+  readonly input: string;
+  readonly output: string;
+  readonly tempFolder: string;
+  readonly selectedTrackIds?: readonly number[];
 }
 
 type ConvertMediaResponse =

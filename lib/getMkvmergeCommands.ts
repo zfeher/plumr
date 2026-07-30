@@ -13,8 +13,8 @@ import {
 
 export function getMkvmergeCommands({
   inputFile,
-  outputDirectory,
-  tempDirectory,
+  outputFolder,
+  tempFolder,
   mediaInfo,
   selectedTracks,
   audio,
@@ -25,7 +25,7 @@ export function getMkvmergeCommands({
   // todo: these feels duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
 
-  const tempMediaDir = path.join(tempDirectory, mediaDir);
+  const tempMediaDir = path.join(tempFolder, mediaDir);
 
   const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
   const tracksMeta = convertibleAudio.reduce((acc, track, index) => {
@@ -161,7 +161,7 @@ export function getMkvmergeCommands({
     .basename(inputFile)
     .replace(`.${mediaInfo.general.fileExtension}`, `.${EXTENSION_MKV}`);
 
-  const outputFile = path.join(outputDirectory, outputFileName);
+  const outputFile = path.join(outputFolder, outputFileName);
   const outputFlag = ["--output", `"${outputFile}"`];
 
   commands.push(
@@ -179,8 +179,8 @@ interface TrackMeta {
 
 interface GetMkvmergeCommandsParams {
   readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
+  readonly outputFolder: string;
+  readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
   readonly audio: readonly Audio[];

@@ -48,6 +48,7 @@
     "oxc/no-optional-chaining": "off",
     "oxc/no-rest-spread-properties": "off",
     "typescript/no-invalid-void-type": ["off", { "allowInGenericTypeArguments": true }],
+    "unicorn/no-process-exit": "off",
     //
     // pedantic
     //

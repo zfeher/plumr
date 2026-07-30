@@ -17,8 +17,8 @@ import {
 
 export function getMp4boxImportAllAndRemoveCommands({
   inputFile,
-  outputDirectory,
-  tempDirectory,
+  outputFolder,
+  tempFolder,
   mediaInfo,
   selectedTracks,
   video,
@@ -30,7 +30,7 @@ export function getMp4boxImportAllAndRemoveCommands({
 
   // todo: these feels like duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
-  const tempMediaDir = path.join(tempDirectory, mediaDir);
+  const tempMediaDir = path.join(tempFolder, mediaDir);
 
   const tracksMeta = convertibleAudio.reduce((acc, track) => {
     acc.set(track, {
@@ -150,13 +150,13 @@ export function getMp4boxImportAllAndRemoveCommands({
   });
 
   // note: execFile doesn't like "" wrapping
-  const tempFlag = ["-tmp", `"${tempDirectory}"`];
+  const tempFlag = ["-tmp", `"${tempFolder}"`];
 
   const outputFileName = path
     .basename(inputFile)
     .replace(`.${mediaInfo.general.fileExtension}`, `.${EXTENSION_MP4}`);
 
-  const outputFile = path.join(outputDirectory, outputFileName);
+  const outputFile = path.join(outputFolder, outputFileName);
   // note: execFile doesn't like "" wrapping
   const outputFlag = ["-new", `"${outputFile}"`];
 
@@ -212,8 +212,8 @@ interface TrackMeta {
 
 interface GetMp4boxImportAllAndRemoveCommandsParams {
   readonly inputFile: string;
-  readonly outputDirectory: string;
-  readonly tempDirectory: string;
+  readonly outputFolder: string;
+  readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
   readonly video: Video;
