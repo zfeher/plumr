@@ -9,7 +9,6 @@ function main(): void {
   console.log(`LG Media v${pkgJson.version}`);
 
   const { values } = parseArgs({ options: getParseArgsOptions() });
-
   const hasInputOption = "input" in values;
 
   // oxlint-disable-next-line typescript/strict-boolean-expressions - todo: resolve
@@ -19,7 +18,6 @@ function main(): void {
   }
 
   const { input, output } = values;
-  const outputContainer = values["output-container"];
   const tempFolder = values["temp-folder"];
   // @ts-expect-error - todo: resolve
   const outputIsFolder = path.extname(output) === "";
@@ -32,12 +30,6 @@ function main(): void {
   } else {
     console.log("output file:", output);
   }
-  // oxlint-disable-next-line typescript/strict-boolean-expressions - todo: resolve
-  if (outputContainer) {
-    console.log("output container:", outputContainer);
-  }
-
-  // todo: infer and log inferred output container if not specified explicitly
 
   console.log();
 }
@@ -51,8 +43,7 @@ function printHelp(): void {
     ["-h, --help", "Show this help message"],
     ["-i, --input", "Input video file or folder containing video files (required)"],
     ["-o, --output", "Output video file or folder (default: T:/__watch_list__/__lgmedia__)"],
-    ["-c, --output-container", "Output container format (mkv, mp4, ts)"],
-    ["-t, --temp-dir", "Tempo directory (default: T:/temp/lgmedia)"],
+    ["-t, --temp-folder", "Temp folder (default: T:/temp/lgmedia)"],
   ] as const;
 
   const optionColumnWidth = options.reduce((max, [option]) => Math.max(max, option.length), 0) + 2;
@@ -60,6 +51,7 @@ function printHelp(): void {
   for (const [option, description] of options) {
     console.log(`  ${option.padEnd(optionColumnWidth)}${description}`);
   }
+  console.log();
 }
 
 function getParseArgsOptions(): ParseArgsOptionsConfig {
@@ -78,11 +70,6 @@ function getParseArgsOptions(): ParseArgsOptionsConfig {
       type: "string",
       short: "o",
       default: "T:/__watch_list__/__lgmedia__",
-    },
-
-    "output-container": {
-      type: "string",
-      short: "c",
     },
 
     "temp-folder": {
