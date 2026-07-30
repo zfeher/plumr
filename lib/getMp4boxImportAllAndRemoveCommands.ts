@@ -25,12 +25,6 @@ export function getMp4boxImportAllAndRemoveCommands({
 }: GetMp4boxImportAllAndRemoveCommandsParams): string[] {
   const commands: string[] = [];
 
-  // todo: extract?
-  interface TrackMeta {
-    extractedFile: string;
-    convertedFile: string;
-  }
-
   const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
 
   // todo: these feels like duplicate
@@ -139,13 +133,12 @@ export function getMp4boxImportAllAndRemoveCommands({
   const newIdOffset = lastTrack ? lastTrack.id + (mediaInfo.hasMenu ? 1 : 0) : 0;
   const addFlags = convertibleAudio.flatMap((track, index) => {
     const meta = tracksMeta.get(track);
-    // todo: better way?
+    // todo: better way? assertIsNotNil?
     if (!meta) throw new Error("This should not happen :)");
 
     const { convertedFile } = meta;
     const expectedId = newIdOffset + 1 + index;
-    // todo: TS can't see that selectedTrackIds won't be undefined anymore 🤔
-    const targetId = (selectedTrackIds ?? []).indexOf(track.id) + 1;
+    const targetId = selectedTrackIds.indexOf(track.id) + 1;
     const { title, language } = track;
     return [
       // note: execFile doesn't like "" wrapping
@@ -212,6 +205,11 @@ export function getMp4boxImportAllAndRemoveCommands({
   // console.log(muxResult);
 
   return commands;
+}
+
+interface TrackMeta {
+  readonly extractedFile: string;
+  readonly convertedFile: string;
 }
 
 interface GetMp4boxImportAllAndRemoveCommandsParams {

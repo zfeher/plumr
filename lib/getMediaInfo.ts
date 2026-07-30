@@ -29,7 +29,7 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
     return;
   }
 
-  // todo: cache data for filepath
+  // todo: cache data for filepath?
 
   const result = await execFile("mediainfo", ["--output=JSON", normalizedFile]);
 
@@ -207,171 +207,171 @@ interface GetMediaInfoResult {
 }
 
 interface MediaInfoRaw {
-  creatingLibrary: CreatingLibraryRaw;
-  media: MediaRaw;
+  readonly creatingLibrary: CreatingLibraryRaw;
+  readonly media: MediaRaw;
 }
 
 interface CreatingLibraryRaw {
-  name: string;
-  version: string;
-  url: string;
+  readonly name: string;
+  readonly version: string;
+  readonly url: string;
 }
 
 interface MediaRaw {
-  "@ref": string;
-  track: TrackRaw[];
+  readonly "@ref": string;
+  readonly track: readonly TrackRaw[];
 }
 
 type TrackRaw = GeneralRaw | VideoRaw | AudioRaw | TextRaw | MenuRaw;
 
 interface GeneralRaw {
-  "@type": typeof trackTypeGeneral;
-  UniqueID: string;
-  VideoCount: string;
-  AudioCount: string;
-  TextCount?: string;
-  MenuCount?: string;
-  FileExtension: string;
-  Format: string;
-  Format_Profile?: string;
-  Format_Version: string;
-  CodecID?: string;
-  CodecID_Compatible?: string;
-  FileSize: string;
-  Duration: string;
-  OverallBitRate: string;
-  OverallBitRate_Mode?: string;
-  FrameRate: string;
-  FrameCount: string;
-  StreamSize: string;
-  IsStreamable: string;
-  Title?: string;
-  Movie?: string;
-  Encoded_Date: string;
-  File_Created_Date: string;
-  File_Created_Date_Local: string;
-  File_Modified_Date: string;
-  File_Modified_Date_Local: string;
-  Encoded_Application: string;
-  Encoded_Library: string;
+  readonly "@type": typeof trackTypeGeneral;
+  readonly UniqueID: string;
+  readonly VideoCount: string;
+  readonly AudioCount: string;
+  readonly TextCount?: string;
+  readonly MenuCount?: string;
+  readonly FileExtension: string;
+  readonly Format: string;
+  readonly Format_Profile?: string;
+  readonly Format_Version: string;
+  readonly CodecID?: string;
+  readonly CodecID_Compatible?: string;
+  readonly FileSize: string;
+  readonly Duration: string;
+  readonly OverallBitRate: string;
+  readonly OverallBitRate_Mode?: string;
+  readonly FrameRate: string;
+  readonly FrameCount: string;
+  readonly StreamSize: string;
+  readonly IsStreamable: string;
+  readonly Title?: string;
+  readonly Movie?: string;
+  readonly Encoded_Date: string;
+  readonly File_Created_Date: string;
+  readonly File_Created_Date_Local: string;
+  readonly File_Modified_Date: string;
+  readonly File_Modified_Date_Local: string;
+  readonly Encoded_Application: string;
+  readonly Encoded_Library: string;
 }
 
 interface VideoRaw {
-  "@type": typeof trackTypeVideo;
-  StreamOrder: string;
-  ID: string;
-  UniqueID: string;
-  Format: string;
-  Format_Profile: string;
-  Format_Level: string;
-  Format_Tier?: string;
-  HDR_Format?: string;
-  HDR_Format_Version?: string;
-  HDR_Format_Profile?: string;
-  HDR_Format_Level?: string;
-  HDR_Format_Settings?: string;
-  HDR_Format_Compatibility?: string;
-  CodecID: string;
-  Duration: string;
-  BitRate: string;
-  Width: string;
-  Height: string;
-  Sampled_Width: string;
-  Sampled_Height: string;
-  PixelAspectRatio: string;
-  DisplayAspectRatio: string;
-  FrameRate_Mode: string;
-  FrameRate: string;
-  FrameRate_Num: string;
-  FrameRate_Den: string;
-  FrameCount: string;
-  ColorSpace: string;
-  ChromaSubsampling: string;
-  BitDepth: string;
-  Delay: string;
-  Delay_Source: string;
-  StreamSize: string;
-  Language: string;
-  Default: string;
-  Forced: string;
+  readonly "@type": typeof trackTypeVideo;
+  readonly StreamOrder: string;
+  readonly ID: string;
+  readonly UniqueID: string;
+  readonly Format: string;
+  readonly Format_Profile: string;
+  readonly Format_Level: string;
+  readonly Format_Tier?: string;
+  readonly HDR_Format?: string;
+  readonly HDR_Format_Version?: string;
+  readonly HDR_Format_Profile?: string;
+  readonly HDR_Format_Level?: string;
+  readonly HDR_Format_Settings?: string;
+  readonly HDR_Format_Compatibility?: string;
+  readonly CodecID: string;
+  readonly Duration: string;
+  readonly BitRate: string;
+  readonly Width: string;
+  readonly Height: string;
+  readonly Sampled_Width: string;
+  readonly Sampled_Height: string;
+  readonly PixelAspectRatio: string;
+  readonly DisplayAspectRatio: string;
+  readonly FrameRate_Mode: string;
+  readonly FrameRate: string;
+  readonly FrameRate_Num: string;
+  readonly FrameRate_Den: string;
+  readonly FrameCount: string;
+  readonly ColorSpace: string;
+  readonly ChromaSubsampling: string;
+  readonly BitDepth: string;
+  readonly Delay: string;
+  readonly Delay_Source: string;
+  readonly StreamSize: string;
+  readonly Language: string;
+  readonly Default: string;
+  readonly Forced: string;
 }
 
 interface AudioRaw {
-  "@type": typeof trackTypeAudio;
-  StreamOrder: string;
-  ID: string;
-  UniqueID: string;
-  Format: string;
-  Format_Commercial_IfAny?: string;
-  Format_Settings_Mode?: string;
-  Format_Settings_Endianness?: string;
-  Format_Settings_SBR?: string;
-  Format_AdditionalFeatures?: string;
-  CodecID: string;
-  Duration: string;
-  BitRate_Mode: string;
-  BitRate: string;
-  Channels?: string;
-  ChannelPositions?: string;
-  ChannelLayout?: string;
-  SamplesPerFrame: string;
-  SamplingRate: string;
-  SamplingCount: string;
-  FrameRate: string;
-  FrameCount: string;
-  Compression_Mode: string;
-  Delay: string;
-  Delay_Source: string;
-  Video_Delay: string;
-  StreamSize: string;
-  Title?: string;
-  Language: string;
-  ServiceKind: string;
-  Default: string;
-  Forced: string;
-  extra: AudioExtraRaw;
+  readonly "@type": typeof trackTypeAudio;
+  readonly StreamOrder: string;
+  readonly ID: string;
+  readonly UniqueID: string;
+  readonly Format: string;
+  readonly Format_Commercial_IfAny?: string;
+  readonly Format_Settings_Mode?: string;
+  readonly Format_Settings_Endianness?: string;
+  readonly Format_Settings_SBR?: string;
+  readonly Format_AdditionalFeatures?: string;
+  readonly CodecID: string;
+  readonly Duration: string;
+  readonly BitRate_Mode: string;
+  readonly BitRate: string;
+  readonly Channels?: string;
+  readonly ChannelPositions?: string;
+  readonly ChannelLayout?: string;
+  readonly SamplesPerFrame: string;
+  readonly SamplingRate: string;
+  readonly SamplingCount: string;
+  readonly FrameRate: string;
+  readonly FrameCount: string;
+  readonly Compression_Mode: string;
+  readonly Delay: string;
+  readonly Delay_Source: string;
+  readonly Video_Delay: string;
+  readonly StreamSize: string;
+  readonly Title?: string;
+  readonly Language: string;
+  readonly ServiceKind: string;
+  readonly Default: string;
+  readonly Forced: string;
+  readonly extra: AudioExtraRaw;
 }
 
 interface AudioExtraRaw {
-  ComplexityIndex: string;
-  NumberOfDynamicObjects: string;
-  BedChannelCount: string;
-  BedChannelConfiguration: string;
-  bsid: string;
-  dialnorm: string;
-  compr: string;
-  acmod: string;
-  lfeon: string;
-  dialnorm_Average: string;
-  dialnorm_Minimum: string;
-  compr_Average: string;
-  compr_Minimum: string;
-  compr_Maximum: string;
-  compr_Count: string;
+  readonly ComplexityIndex: string;
+  readonly NumberOfDynamicObjects: string;
+  readonly BedChannelCount: string;
+  readonly BedChannelConfiguration: string;
+  readonly bsid: string;
+  readonly dialnorm: string;
+  readonly compr: string;
+  readonly acmod: string;
+  readonly lfeon: string;
+  readonly dialnorm_Average: string;
+  readonly dialnorm_Minimum: string;
+  readonly compr_Average: string;
+  readonly compr_Minimum: string;
+  readonly compr_Maximum: string;
+  readonly compr_Count: string;
 }
 
 interface TextRaw {
-  "@type": typeof trackTypeText;
-  "@typeorder": string;
-  StreamOrder: string;
-  ID: string;
-  UniqueID: string;
-  Format: string;
-  MuxingMode: string;
-  CodecID: string;
-  Duration: string;
-  BitRate: string;
-  FrameRate: string;
-  FrameCount: string;
-  ElementCount: string;
-  StreamSize: string;
-  Title: string;
-  Language: string;
-  Default: string;
-  Forced: string;
+  readonly "@type": typeof trackTypeText;
+  readonly "@typeorder": string;
+  readonly StreamOrder: string;
+  readonly ID: string;
+  readonly UniqueID: string;
+  readonly Format: string;
+  readonly MuxingMode: string;
+  readonly CodecID: string;
+  readonly Duration: string;
+  readonly BitRate: string;
+  readonly FrameRate: string;
+  readonly FrameCount: string;
+  readonly ElementCount: string;
+  readonly StreamSize: string;
+  readonly Title: string;
+  readonly Language: string;
+  readonly Default: string;
+  readonly Forced: string;
 }
 
 interface MenuRaw {
-  "@type": typeof trackTypeMenu;
-  extra: Record<string, string>;
+  readonly "@type": typeof trackTypeMenu;
+  readonly extra: Record<string, string>;
 }

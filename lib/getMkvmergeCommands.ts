@@ -21,13 +21,6 @@ export function getMkvmergeCommands({
 }: GetMkvmergeCommandsParams): string[] {
   const commands: string[] = [];
 
-  // todo: extract?
-  interface TrackMeta {
-    fid: number;
-    extractedFile: string;
-    convertedFile: string;
-  }
-
   // todo: these feels duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
 
@@ -93,7 +86,7 @@ export function getMkvmergeCommands({
   // todo: alternative could be traversing tracksMeta
   for (const track of convertibleAudio) {
     const meta = tracksMeta.get(track);
-    // todo: better way?
+    // todo: better way? assertIsNotNil?
     if (!meta) throw new Error("This should not happen :)");
 
     commands.push(`eac3to "${meta.extractedFile}" "${meta.convertedFile}" -down6 -640`);
@@ -136,7 +129,7 @@ export function getMkvmergeCommands({
   // note: here we rely on that only convertible audio is extracted and converted
   const externalFlags = convertibleAudio.flatMap((track) => {
     const meta = tracksMeta.get(track);
-    // todo: better way?
+    // todo: better way? assertIsNotNil?
     if (!meta) throw new Error("This should not happen :)");
 
     // note: this one is tricky because the options are input specific and TID
@@ -178,6 +171,12 @@ export function getMkvmergeCommands({
   );
 
   return commands;
+}
+
+interface TrackMeta {
+  readonly fid: number;
+  readonly extractedFile: string;
+  readonly convertedFile: string;
 }
 
 interface GetMkvmergeCommandsParams {

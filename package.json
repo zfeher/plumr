@@ -13,6 +13,7 @@
   "type": "module",
   "main": "lib/index.ts",
   "scripts": {
+    "type:check": "tsc --noEmit",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",

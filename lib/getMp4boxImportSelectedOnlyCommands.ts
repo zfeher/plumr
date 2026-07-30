@@ -27,12 +27,6 @@ export function getMp4boxImportSelectedOnlyCommands({
 }: GetMp4boxImportSelectedOnlyCommandsParams): string[] {
   const commands: string[] = [];
 
-  // todo: extract?
-  interface TrackMeta {
-    extractedFile: string;
-    convertedFile: string | undefined;
-  }
-
   // todo: these feels duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
 
@@ -217,6 +211,11 @@ export function getMp4boxImportSelectedOnlyCommands({
   // console.log(muxResult);
 
   return commands;
+}
+
+interface TrackMeta {
+  readonly extractedFile: string;
+  readonly convertedFile: string | undefined;
 }
 
 interface GetMp4boxImportSelectedOnlyCommandsParams {

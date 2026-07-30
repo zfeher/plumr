@@ -26,12 +26,6 @@ export function getMp4boxDemuxAllCommands({
 }: GetMp4boxDemuxAllCommandsParams): string[] {
   const commands: string[] = [];
 
-  // todo: extract?
-  interface TrackMeta {
-    extractedFile: string;
-    convertedFile?: string;
-  }
-
   // todo: these feels duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
 
@@ -52,7 +46,7 @@ export function getMp4boxDemuxAllCommands({
   // todo: this is clean duplicate
   const extractTracksOptions = selectedTracks.map((track) => {
     const meta = tracksMeta.get(track);
-    // todo: better way?
+    // todo: better way? asssertIsNotNil?
     if (!meta) throw new Error("This should not happen :)");
 
     // note: TIDs of mkvextract starts from 0 whereas mediainfo id starts from 1
@@ -122,7 +116,7 @@ export function getMp4boxDemuxAllCommands({
   // for dvhe
   const addFlags = selectedTracks.flatMap((track, index) => {
     const meta = tracksMeta.get(track);
-    // todo: better way?
+    // todo: better way? assertIsNotNil?
     if (!meta) throw new Error("This should not happen :)");
 
     const file = meta.convertedFile ?? meta.extractedFile;
@@ -187,6 +181,11 @@ export function getMp4boxDemuxAllCommands({
   // console.log(muxResult);
 
   return commands;
+}
+
+interface TrackMeta {
+  readonly extractedFile: string;
+  readonly convertedFile?: string;
 }
 
 interface GetMp4boxDemuxAllCommandsParams {

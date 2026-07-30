@@ -59,11 +59,6 @@ export const HDR_FORMAT_DOLBY_VISION_HDR10_PLUS = "Dolby Vision / SMPTE ST 2094 
 export const HDR_FORMAT_HDR10_PLUS = "SMPTE ST 2094 App 4";
 export const HDR_FORMAT_HDR10 = "SMPTE ST 2086";
 
-export const tsCodecMapping = new Map<string, string>()
-  .set("A_AAC-2", "A_AAC")
-  .set("A_EAC3", "A_AC3")
-  .set("A_TRUEHD", "A_AC3");
-
 export const threeLetterLanguageCodes = new Map<string, string>()
   .set("en", "eng")
   .set("ar", "ara")

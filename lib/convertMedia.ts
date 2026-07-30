@@ -95,6 +95,8 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
       }
     }
   } else {
+    // input is a single file
+
     const result = await convertSingleMedia({
       inputFile,
       outputDirectory,
@@ -177,7 +179,7 @@ async function convertSingleMedia(
 
   const selectedTracks = selectedTrackIds.map((trackId) => {
     const infoTrack = mediaInfo.tracks.find((track) => track.id === trackId);
-    // todo: better way?
+    // todo: better way? assertIsNotNil?
     if (!infoTrack) throw new Error("This should not happen :)");
     return infoTrack;
   });
@@ -427,24 +429,24 @@ type ConvertSingleMediaResponse =
   | ConvertSingleMediaErrorResponse;
 
 interface ConvertSingleMediaOkResponse extends ConvertSingleMediaResponseBase {
-  status: "OK";
-  commands: string[];
+  readonly status: "OK";
+  readonly commands: string[];
 }
 
 interface ConvertSingleMediaWarnResponse
   extends
     Omit<ConvertSingleMediaOkResponse, "status">,
     Omit<ConvertSingleMediaErrorResponse, "status"> {
-  status: "WARN";
+  readonly status: "WARN";
 }
 
 interface ConvertSingleMediaErrorResponse extends ConvertSingleMediaResponseBase {
-  status: "ERROR";
-  messages: string[];
+  readonly status: "ERROR";
+  readonly messages: string[];
 }
 
 interface ConvertSingleMediaResponseBase {
-  isAlreadySupported: boolean;
+  readonly isAlreadySupported: boolean;
 }
 
 interface ConvertMediaParams {
@@ -460,14 +462,14 @@ type ConvertMediaResponse =
   | ConvertMediaErrorResponse;
 
 interface ConvertMediaOkResponse {
-  status: "OK";
+  readonly status: "OK";
 }
 
 interface ConvertMediaWarnResponse extends Omit<ConvertMediaOkResponse, "status"> {
-  status: "WARN";
-  messages: string[];
+  readonly status: "WARN";
+  readonly messages: string[];
 }
 
 interface ConvertMediaErrorResponse extends Omit<ConvertMediaWarnResponse, "status"> {
-  status: "ERROR";
+  readonly status: "ERROR";
 }
