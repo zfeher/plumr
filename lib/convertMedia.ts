@@ -23,7 +23,6 @@ import {
   hasItems,
   none,
   isAlreadySupportedByTv,
-  isThreeLetterLanguageCode,
   assertIsDefined,
 } from "./common.ts";
 
@@ -259,7 +258,7 @@ async function convertSingleMedia(
   const hasForeignAudioSelectedOnly = none(
     (lang) => languages.has(lang),
     // todo: this is subjective for now 😉
-    ["en", "eng", "hu", "hun"],
+    ["en", "eng", "en-US", "hu", "hun", "hu-HU"],
   );
 
   const hasSelectedSubtitles = hasItems(subtitle);
@@ -304,17 +303,6 @@ async function convertSingleMedia(
   if (isAlreadySupported) {
     console.warn("convertMedia: media should be already playable");
     warnings.push("media should be already playable");
-  }
-
-  const languagesWithoutThreeLetterCode = selectedTracks
-    .filter((track) => track.language !== undefined && !isThreeLetterLanguageCode(track.language))
-    .map((track) => track.language);
-
-  if (hasItems(languagesWithoutThreeLetterCode)) {
-    const langs = languagesWithoutThreeLetterCode.join(", ");
-
-    console.warn(`convertMedia: some languages has no three letter language codes: [${langs}]`);
-    warnings.push(`some languages has no three letter language codes: [${langs}]`);
   }
 
   let commands: string[] = [];

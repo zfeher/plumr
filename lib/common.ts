@@ -7,15 +7,10 @@ import {
   reversedPreferredConvertibleAudioOrder,
   supportedAudioFormatsByTv,
   supportedDolbyVisionContainersByTv,
-  threeLetterLanguageCodes,
   trackTypeAudio,
   trackTypeSubtitle,
   trackTypeVideo,
 } from "./constants.ts";
-
-export function isThreeLetterLanguageCode(language: string): boolean {
-  return threeLetterLanguageCodes.has(language.toLowerCase());
-}
 
 export function isAlreadySupportedByTv(fileExtension: string, tracks: readonly Track[]): boolean {
   return (
@@ -107,7 +102,7 @@ function isRecommendedSubtitle(track: Subtitle): boolean {
     isSupportedSubtitleByTv(track) &&
     !track.forced &&
     !isCommentaryTrack(track) &&
-    ["en", "eng"].includes(track.language)
+    ["en", "eng", "en-US"].includes(track.language)
   );
 }
 
@@ -127,7 +122,7 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
   const hasForeignAudioOnly = none(
     (lang) => languages.has(lang),
     // todo: this is subjective for now 😉
-    ["en", "eng", "hu", "hun"],
+    ["en", "eng", "en-US", "hu", "hun", "hu-HU"],
   );
 
   // single audio easy 🙂

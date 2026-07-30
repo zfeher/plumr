@@ -23,7 +23,8 @@ export const FORMAT_OPUS = "Opus";
 export const FORMAT_TRUE_HD = "MLP FBA";
 export const FORMAT_ASS = "ASS";
 export const FORMAT_PGS = "PGS";
-export const FORMAT_UTF8 = "utf8";
+// oxlint-disable-next-line unicorn/text-encoding-identifier-case - should be UTF-8 that is what we get
+export const FORMAT_UTF8 = "UTF-8";
 export const FORMAT_MP4_TIMED_TEXT = "Timed Text";
 
 export const audioFormatsNeedsConversionForTv = [FORMAT_TRUE_HD, FORMAT_DTS] as const;
@@ -63,41 +64,6 @@ export const HDR_FORMAT_DOLBY_VISION_HDR10 = "Dolby Vision / SMPTE ST 2086";
 export const HDR_FORMAT_DOLBY_VISION_HDR10_PLUS = "Dolby Vision / SMPTE ST 2094 App 4";
 export const HDR_FORMAT_HDR10_PLUS = "SMPTE ST 2094 App 4";
 export const HDR_FORMAT_HDR10 = "SMPTE ST 2086";
-
-export const threeLetterLanguageCodes = new Map<string, string>()
-  .set("en", "eng")
-  .set("ar", "ara")
-  .set("ca", "cat")
-  .set("cs", "cze")
-  .set("da", "dan")
-  .set("de", "ger")
-  .set("el", "gre")
-  .set("es", "spa")
-  .set("eu", "baq")
-  .set("fi", "fin")
-  .set("fil", "fil")
-  .set("fr", "fre")
-  .set("gl", "glg")
-  .set("he", "heb")
-  .set("hr", "hrv")
-  .set("hu", "hun")
-  .set("id", "ind")
-  .set("it", "ita")
-  .set("ja", "jpn")
-  .set("ko", "kor")
-  .set("ms", "may")
-  .set("nb", "nob")
-  .set("nl", "dut")
-  .set("pl", "pol")
-  .set("pt", "por")
-  .set("ro", "rum")
-  .set("ru", "rus")
-  .set("sv", "swe")
-  .set("th", "tha")
-  .set("tr", "tur")
-  .set("uk", "ukr")
-  .set("vi", "vie")
-  .set("zh", "chi");
 
 export const mp4BoxBrandCompatFlags = [
   ["-brand", "mp42"],
