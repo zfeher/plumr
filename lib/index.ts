@@ -32,7 +32,13 @@ function main(): void {
   } else {
     console.log("output file:", output);
   }
-  console.log("output container:", outputContainer);
+  // oxlint-disable-next-line typescript/strict-boolean-expressions - todo: resolve
+  if (outputContainer) {
+    console.log("output container:", outputContainer);
+  }
+
+  // todo: infer and log inferred output container if not specified explicitly
+
   console.log();
 }
 

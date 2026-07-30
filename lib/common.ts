@@ -1,0 +1,323 @@
+import type { Audio, Subtitle, Track, Video } from "./types.ts";
+import {
+  FORMAT_MP4_TIMED_TEXT,
+  HDR_FORMAT_DOLBY_VISION,
+  audioFormatsNeedsConversionForTv,
+  formatToExtensionMap,
+  reversedPreferredConvertibleAudioOrder,
+  supportedAudioFormatsByTv,
+  supportedDolbyVisionContainersByTv,
+  threeLetterLanguageCodes,
+  trackTypeAudio,
+  trackTypeSubtitle,
+  trackTypeVideo,
+  tsCodecMapping,
+} from "./constants.ts";
+
+export function getTsCodec(codec: string): string {
+  return tsCodecMapping.get(codec) ?? codec;
+}
+
+export function getThreeLetterLanguageCode(language: string): string | null {
+  return threeLetterLanguageCodes.get(language.toLowerCase()) ?? null;
+}
+
+export function isThreeLetterLanguageCode(language: string): boolean {
+  return threeLetterLanguageCodes.has(language.toLowerCase());
+}
+
+export function isAlreadySupportedByTv(fileExtension: string, tracks: readonly Track[]): boolean {
+  return (
+    hasSupportedVideoByTvAndContainer(fileExtension, tracks) &&
+    hasSufficientSupportedAudioByTv(tracks)
+  );
+}
+
+export function getRecommendedTracks(tracks: readonly Track[]): GetRecommendedTracksResult {
+  const recommendedVideo = getSupportedVideoTracksByTv(tracks);
+  const recommendedAudio = getRecommendedAudioTracks(tracks);
+  const recommendedSubtitle = getRecommendedSubtitleTracks(tracks);
+  return {
+    hasRecommendedVideo: recommendedVideo !== undefined,
+    hasRecommendedAudio: hasItems(recommendedAudio.tracks),
+    hasRecommendedSubtitle: hasItems(recommendedSubtitle.tracks),
+    hasSubtitleTracks: recommendedSubtitle.hasCandidates,
+    hasForeignAudioOnly: recommendedAudio.hasForeignAudioOnly,
+    tracks: [recommendedVideo ?? [], recommendedAudio.tracks, recommendedSubtitle.tracks].flat(),
+  };
+}
+
+export function isDolbyVisionProfile7(track: Video): boolean {
+  // DV profile 7: dv**.07
+  return /dv[a-z]{2}\.07/u.test(track.hdrFormatProfile ?? "");
+}
+
+export function isDolbyVision(track: Video): boolean {
+  return track.hdrFormat?.includes(HDR_FORMAT_DOLBY_VISION) ?? false;
+}
+
+export function isUnsupportedAudioAndNotConvertibleForTv(track: Audio): boolean {
+  return !isSupportedAudioOrNeedsConversionForTv(track);
+}
+
+export function isSupportedAudioOrNeedsConversionForTv(track: Audio): boolean {
+  return isSupportedAudioByTv(track) || isAudioNeedsConversionForTv(track);
+}
+
+export function isSupportedAudioByTv(track: Audio): boolean {
+  // todo: resolve: schema validation could help
+  // oxlint-disable-next-line typescript/no-explicit-any typescript/no-unsafe-argument typescript/no-unsafe-type-assertion
+  return supportedAudioFormatsByTv.includes(track.format as any);
+}
+
+export function isAudioNeedsConversionForTv(track: Audio): boolean {
+  // todo: resolve: schema validation could help
+  // oxlint-disable-next-line typescript/no-unsafe-argument typescript/no-unsafe-type-assertion typescript/no-explicit-any
+  return audioFormatsNeedsConversionForTv.includes(track.format as any);
+}
+
+export function isSupportedSubtitleByTv(track: Subtitle): boolean {
+  // return ['UTF-8', 'ASS'].includes(track.format);
+  return /S_TEXT\//iu.test(track.codecId) || track.format === FORMAT_MP4_TIMED_TEXT;
+}
+
+export function isUnsupportedSubtitleByTv(track: Subtitle): boolean {
+  return !isSupportedSubtitleByTv(track);
+}
+
+export function isVideoTrack(track: Track): track is Video {
+  return track.type === trackTypeVideo;
+}
+
+export function isAudioTrack(track: Track): track is Audio {
+  return track.type === trackTypeAudio;
+}
+
+export function isSubtitleTrack(track: Track): track is Subtitle {
+  return track.type === trackTypeSubtitle;
+}
+
+export function getTrackExtension(track: Track): string {
+  const extension = formatToExtensionMap.get(track.format);
+  // todo: better way?
+  if (!extension) {
+    throw new Error(
+      `Unsupported track format (${track.format}) so cannot figure out the extension 😔`,
+    );
+  }
+  return extension;
+}
+
+export function isSupportedVideoByTv(track: Video): boolean {
+  return !isDolbyVisionProfile7(track);
+}
+
+export function isEmpty(arr: readonly unknown[]): boolean {
+  return arr.length === 0;
+}
+
+export function hasItems(arr: readonly unknown[]): boolean {
+  return arr.length > 0;
+}
+
+export function reject<T>(fn: (item: T) => boolean, arr: readonly T[]): T[] {
+  return arr.filter((item) => !fn(item));
+}
+
+export function none<T>(fn: (item: T) => boolean, arr: readonly T[]): boolean {
+  return arr.every((item) => !fn(item));
+}
+
+function hasSufficientSupportedAudioByTv(tracks: readonly Track[]): boolean {
+  const { tracks: recommended } = getRecommendedAudioTracks(tracks);
+  return hasItems(recommended) && none(isAudioNeedsConversionForTv, recommended);
+}
+
+function hasSupportedVideoByTvAndContainer(
+  containerExtension: string,
+  tracks: readonly Track[],
+): boolean {
+  const video = getSupportedVideoTracksByTv(tracks);
+
+  if (
+    !video ||
+    (isDolbyVision(video) && !isSupportedDolbyVisionContainerByTv(containerExtension))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function isSupportedDolbyVisionContainerByTv(extension: string): boolean {
+  // todo: resolve: schema validation could help
+  // oxlint-disable-next-line typescript/no-explicit-any typescript/no-unsafe-argument typescript/no-unsafe-type-assertion
+  return supportedDolbyVisionContainersByTv.includes(extension as any);
+}
+
+function getSupportedVideoTracksByTv(tracks: readonly Track[]): Video | undefined {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve
+  const video = tracks.filter(
+    (track) => isVideoTrack(track) && isSupportedVideoByTv(track),
+  ) as Video[]; // todo: better way?
+
+  if (video.length > 1) {
+    // todo: better way?
+    // todo: warn user if multiple video track found vs check what can mp4 support?
+    throw new Error("This should not happen usually :)");
+  }
+
+  return video[0];
+}
+
+function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudioTracksResult {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve
+  const candidates = tracks.filter(
+    (track) =>
+      isAudioTrack(track) &&
+      !isCommentaryTrack(track) &&
+      isSupportedAudioOrNeedsConversionForTv(track),
+  ) as Audio[]; // todo: better way?
+
+  const languages = candidates.reduce((acc, track) => {
+    return acc.add(track.language);
+  }, new Set<string>());
+
+  const hasForeignAudioOnly = none(
+    (lang) => languages.has(lang),
+    // todo: this is subjective for now 😉
+    ["en", "eng", "hu", "hun"],
+  );
+
+  // single audio easy 🙂
+  if (candidates.length === 1) {
+    return { tracks: candidates, hasForeignAudioOnly };
+  }
+
+  const supported = candidates.filter((track) => isSupportedAudioByTv(track));
+  const convertible = candidates.filter((track) => isAudioNeedsConversionForTv(track));
+
+  // simple keep all supported
+  if (isEmpty(convertible)) {
+    return { tracks: supported, hasForeignAudioOnly };
+  }
+
+  // multi lang we cannot automatically decide what to convert (origin lang not known)
+  if (languages.size > 1) {
+    return { tracks: [], hasForeignAudioOnly };
+  }
+
+  // single lang + multi audio cases
+
+  // note: MP4 DTS, Opus channels info are missing so we cannot recommend correctly
+  if (candidates.some(hasNoChannelsInfo)) {
+    return { tracks: [], hasForeignAudioOnly };
+  }
+
+  if (
+    supported.some(hasMultiChannels) ||
+    (hasItems(supported) && none(hasMultiChannels, convertible))
+  ) {
+    return { tracks: supported, hasForeignAudioOnly };
+  }
+
+  const preferredConvertible = getPreferredConvertibleAudioTrack(convertible);
+  const recommended = preferredConvertible ? [preferredConvertible, ...supported] : supported;
+
+  return { tracks: recommended, hasForeignAudioOnly };
+}
+
+function getPreferredConvertibleAudioTrack(tracks: readonly Audio[]): Audio | undefined {
+  if (tracks.length === 0) {
+    return undefined;
+  }
+  if (tracks.length === 1) {
+    return tracks[0];
+  }
+
+  // TrueHD > DTS-HD MA > DTS, ...
+
+  const sorted = tracks.toSorted((trackA, trackB) => {
+    const aIndex = reversedPreferredConvertibleAudioOrder.indexOf(getAudioFormatString(trackA));
+    const bIndex = reversedPreferredConvertibleAudioOrder.indexOf(getAudioFormatString(trackB));
+    // note: yes we reverse once again so we can take arr[0] as most preferred ;)
+    if (aIndex === bIndex) return 0;
+    return aIndex > bIndex ? -1 : 1;
+  });
+
+  return sorted[0];
+}
+
+function getAudioFormatString(track: Audio): string {
+  return `${track.format} ${track.formatAdditionalFeatures}, ${track.formatCommercialIfAny}`.replaceAll(
+    /,? undefined/gu,
+    "",
+  );
+}
+
+function hasNoChannelsInfo(track: Audio): boolean {
+  return !hasChannelsInfo(track);
+}
+
+function hasChannelsInfo(track: Audio): boolean {
+  return track.channels !== undefined;
+}
+
+function hasMultiChannels(track: Audio): boolean {
+  return (track.channels ?? 0) > 4;
+}
+
+function getRecommendedSubtitleTracks(tracks: readonly Track[]): GetRecommendedSubtitleTracks {
+  const candidates = tracks.filter(isSubtitleTrack);
+  const recommended = candidates.filter(isRecommendedSubtitle).toSorted((subtitleA, subtitleB) => {
+    const aSize = subtitleA.streamSize;
+    const bSize = subtitleB.streamSize;
+    if (aSize === bSize) return 0;
+    return bSize < aSize ? 1 : -1;
+  });
+
+  // note: if first sub is forced (at least 2x smaller than the second sub) we drop it
+  if (
+    recommended.length > 1 &&
+    recommended[0] &&
+    recommended[1] &&
+    recommended[0].streamSize / recommended[1].streamSize <= 0.5
+  ) {
+    recommended.slice(1);
+  }
+
+  return { tracks: recommended, hasCandidates: hasItems(candidates) };
+}
+
+function isRecommendedSubtitle(track: Subtitle): boolean {
+  return (
+    track.streamSize > 0 &&
+    isSupportedSubtitleByTv(track) &&
+    !track.forced &&
+    !isCommentaryTrack(track) &&
+    ["en", "eng"].includes(track.language)
+  );
+}
+
+function isCommentaryTrack(track: Audio | Subtitle): boolean {
+  return /commentary/iu.test(track.title ?? "");
+}
+
+interface GetRecommendedSubtitleTracks {
+  tracks: readonly Track[];
+  hasCandidates: boolean;
+}
+
+interface GetRecommendedAudioTracksResult {
+  tracks: readonly Audio[];
+  hasForeignAudioOnly: boolean;
+}
+
+interface GetRecommendedTracksResult {
+  hasRecommendedVideo: boolean;
+  hasRecommendedAudio: boolean;
+  hasRecommendedSubtitle: boolean;
+  hasSubtitleTracks: boolean;
+  hasForeignAudioOnly: boolean;
+  tracks: readonly Track[];
+}

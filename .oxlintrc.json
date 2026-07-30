@@ -34,11 +34,47 @@
     "max-statements": "off",
     "no-console": "off",
     "no-magic-numbers": "off",
-    "no-use-before-define": ["error", { "functions": false }],
     "sort-imports": "off",
     "sort-keys": "off",
     //
-    "unicorn/no-array-reduce": "off"
+    "unicorn/no-array-reduce": "off",
+    //
+    // restriction
+    //
+    "complexity": "off",
+    "no-undefined": "off",
+    "no-use-before-define": ["error", { "functions": false }],
+    "oxc/no-async-await": "off",
+    "oxc/no-optional-chaining": "off",
+    "oxc/no-rest-spread-properties": "off",
+    "typescript/no-invalid-void-type": ["off", { "allowInGenericTypeArguments": true }],
+    //
+    // pedantic
+    //
+    "max-lines": "off",
+    "max-lines-per-function": "off",
+    "no-inline-comments": "off",
+    "no-warning-comments": "off",
+    "typescript/prefer-readonly-parameter-types": ["error", { "ignoreInferredTypes": true }],
+    "typescript/strict-boolean-expressions": [
+      "error",
+      {
+        "allowNullableBoolean": true,
+        "allowNullableObject": true,
+        "allowNullableString": true,
+        "allowString": true
+      }
+    ],
+    "unicorn/no-array-callback-reference": "off",
+    //
+    // style
+    //
+    "arrow-body-style": "off",
+    "curly": ["error", "multi-line", "consistent"],
+    "id-length": ["error", { "checkGeneric": false }],
+    "no-ternary": "off",
+    "unicorn/filename-case": ["error", { "cases": { "camelCase": true, "pascalCase": true } }],
+    "unicorn/no-null": "off"
   },
   //
   "env": {
