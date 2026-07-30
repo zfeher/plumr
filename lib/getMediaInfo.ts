@@ -291,7 +291,7 @@ interface VideoRaw {
   readonly Delay: string;
   readonly Delay_Source: string;
   readonly StreamSize: string;
-  readonly Language: string;
+  readonly Language?: string;
   readonly Default: string;
   readonly Forced: string;
 }

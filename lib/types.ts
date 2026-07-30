@@ -67,7 +67,7 @@ export interface Video {
   readonly chromaSubsampling: string;
   readonly bitDepth: number;
   readonly streamSize: number;
-  readonly language: string;
+  readonly language: string | undefined;
   readonly default: boolean;
   readonly forced: boolean;
 }

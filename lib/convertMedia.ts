@@ -307,7 +307,7 @@ async function convertSingleMedia(
   }
 
   const languagesWithoutThreeLetterCode = selectedTracks
-    .filter((track) => track.language !== "" && !isThreeLetterLanguageCode(track.language))
+    .filter((track) => track.language !== undefined && !isThreeLetterLanguageCode(track.language))
     .map((track) => track.language);
 
   if (hasItems(languagesWithoutThreeLetterCode)) {
