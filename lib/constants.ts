@@ -1,3 +1,8 @@
+export const MP4BOX_MODE_IMPORT_SELECTED_ONLY = "importSelectedOnly";
+export const MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE = "importAllThenRemove";
+export const MP4BOX_MODE_DEMUX_ALL = "demuxAll";
+export const DEFAULT_MP4BOX_MODE = MP4BOX_MODE_IMPORT_SELECTED_ONLY;
+
 export const trackTypeGeneral = "General";
 export const trackTypeMenu = "Menu";
 export const trackTypeVideo = "Video";

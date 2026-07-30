@@ -1,4 +1,16 @@
-import type { trackTypeAudio, trackTypeSubtitle, trackTypeVideo } from "./constants.ts";
+import type {
+  MP4BOX_MODE_DEMUX_ALL,
+  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+  trackTypeAudio,
+  trackTypeSubtitle,
+  trackTypeVideo,
+} from "./constants.ts";
+
+export type Mp4BoxMode =
+  | typeof MP4BOX_MODE_IMPORT_SELECTED_ONLY
+  | typeof MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE
+  | typeof MP4BOX_MODE_DEMUX_ALL;
 
 export interface MediaInfo {
   readonly hasMenu: boolean;

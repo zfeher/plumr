@@ -2,6 +2,13 @@ import { parseArgs, type ParseArgsOptionsConfig } from "node:util";
 import path from "node:path";
 import pkgJson from "../package.json" with { type: "json" };
 import { convertMedia } from "./convertMedia.ts";
+import {
+  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+  MP4BOX_MODE_DEMUX_ALL,
+  DEFAULT_MP4BOX_MODE,
+} from "./constants.ts";
+import type { Mp4BoxMode } from "./types.ts";
 
 await main();
 
@@ -33,6 +40,8 @@ async function main(): Promise<void> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
   const tempFolder = values["temp-folder"] as string;
   const outputIsFolder = path.extname(output) === "";
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
+  const mp4boxMode = values["mp4box-mode"] as Mp4BoxMode;
 
   console.log();
   console.log("temp folder:", tempFolder);
@@ -42,10 +51,11 @@ async function main(): Promise<void> {
   } else {
     console.log("output file:", output);
   }
+  console.log("mp4box mode:", mp4boxMode);
 
   console.log();
 
-  const result = await convertMedia({ input, output, tempFolder });
+  const result = await convertMedia({ input, output, tempFolder, mp4boxMode });
   console.log(JSON.stringify(result, null, 2));
   console.log();
 }
@@ -61,6 +71,10 @@ function printHelp(): void {
     ["-i, --input", "Input video file or folder containing video files (required)"],
     ["-o, --output", "Output video file or folder (default: T:/__watch_list__/__lgmedia__)"],
     ["-t, --temp-folder", "Temp folder (default: T:/temp/lgmedia)"],
+    [
+      "--mp4box-mode",
+      `mp4box mode (default: ${DEFAULT_MP4BOX_MODE}, all: ${MP4BOX_MODE_IMPORT_SELECTED_ONLY}, ${MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE}, ${MP4BOX_MODE_DEMUX_ALL})`,
+    ],
   ] as const;
 
   const optionColumnWidth = options.reduce((max, [option]) => Math.max(max, option.length), 0) + 2;
@@ -93,6 +107,11 @@ function getParseArgsOptions(): ParseArgsOptionsConfig {
       type: "string",
       short: "t",
       default: "T:/temp/lgmedia",
+    },
+
+    "mp4box-mode": {
+      type: "string",
+      default: DEFAULT_MP4BOX_MODE,
     },
   };
 }

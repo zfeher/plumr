@@ -2,8 +2,14 @@ import fs from "node:fs/promises";
 import fss from "node:fs";
 import path from "node:path";
 
-import type { Audio, MediaInfo, Subtitle, Track, Video } from "./types.ts";
-import { EXTENSION_MKV, FORMAT_MATROSKA } from "./constants.ts";
+import type { Audio, MediaInfo, Mp4BoxMode, Subtitle, Track, Video } from "./types.ts";
+import {
+  EXTENSION_MKV,
+  FORMAT_MATROSKA,
+  MP4BOX_MODE_DEMUX_ALL,
+  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+} from "./constants.ts";
 
 import {
   isAudioTrack,
@@ -27,20 +33,8 @@ import { getMp4boxImportAllAndRemoveCommands } from "./getMp4boxImportAllAndRemo
 import { getMp4boxDemuxAllCommands } from "./getMp4boxDemuxAllCommands.ts";
 import { getMkvmergeCommands } from "./getMkvmergeCommands.ts";
 
-// todo: vs dreaded enum? why? all enum types?
-const MP4BOX_METHOD_IMPORT_SELECTED_ONLY = "mp4boxImportSelectedOnly";
-const MP4BOX_METHOD_IMPORT_ALL_THEN_REMOVE = "mp4boxImportAllThenRemove";
-const MP4BOX_METHOD_DEMUX_ALL = "mp4boxDemuxAll";
-
-type Mp4BoxMethod =
-  | typeof MP4BOX_METHOD_IMPORT_SELECTED_ONLY
-  | typeof MP4BOX_METHOD_IMPORT_ALL_THEN_REMOVE
-  | typeof MP4BOX_METHOD_DEMUX_ALL;
-
-const mp4boxMethod: Mp4BoxMethod = MP4BOX_METHOD_IMPORT_SELECTED_ONLY;
-
 export async function convertMedia(options: ConvertMediaParams): Promise<ConvertMediaResponse> {
-  const { selectedTrackIds } = options;
+  const { selectedTrackIds, mp4boxMode } = options;
   // todo: for now we remove "" wrapper ahead and see if it will be a problem
   const input = options.input.replace(/^['"]/u, "").replace(/['"]$/u, "");
   let outputFolder = options.output.replace(/^['"]/u, "").replace(/['"]$/u, "");
@@ -86,6 +80,7 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
 
       // oxlint-disable-next-line no-await-in-loop - fine for this use case
       const result = await convertSingleMedia({
+        mp4boxMode,
         inputFile: mkvFile,
         outputFolder,
         tempFolder,
@@ -106,6 +101,7 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
     // input is a single file
 
     const result = await convertSingleMedia({
+      mp4boxMode,
       inputFile: input,
       outputFolder,
       tempFolder,
@@ -155,7 +151,7 @@ async function convertSingleMedia(
 ): Promise<ConvertSingleMediaResponse> {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const { inputFile, outputFolder, tempFolder } = options;
+  const { inputFile, outputFolder, tempFolder, mp4boxMode } = options;
   let { selectedTrackIds } = options;
 
   // todo: use some cache for media info to avoid some wait twice ;)
@@ -325,6 +321,7 @@ async function convertSingleMedia(
   if (isEmpty(errors) && video) {
     commands = isDolbyVision(video)
       ? getMp4boxCommands({
+          mp4boxMode,
           inputFile,
           outputFolder,
           tempFolder,
@@ -363,6 +360,7 @@ async function convertSingleMedia(
 }
 
 function getMp4boxCommands({
+  mp4boxMode,
   inputFile,
   outputFolder,
   tempFolder,
@@ -372,7 +370,7 @@ function getMp4boxCommands({
   audio,
 }: GetMp4boxCommandsParams): string[] {
   // todo: we can do better, method => func map with same params could be nicer
-  if (mp4boxMethod === MP4BOX_METHOD_IMPORT_SELECTED_ONLY) {
+  if (mp4boxMode === MP4BOX_MODE_IMPORT_SELECTED_ONLY) {
     return getMp4boxImportSelectedOnlyCommands({
       inputFile,
       outputFolder,
@@ -384,7 +382,7 @@ function getMp4boxCommands({
     });
   }
 
-  if (mp4boxMethod === MP4BOX_METHOD_IMPORT_ALL_THEN_REMOVE) {
+  if (mp4boxMode === MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE) {
     return getMp4boxImportAllAndRemoveCommands({
       inputFile,
       outputFolder,
@@ -397,7 +395,7 @@ function getMp4boxCommands({
   }
 
   // todo: alternative solution if sth goes wrong 😉
-  if (mp4boxMethod === MP4BOX_METHOD_DEMUX_ALL) {
+  if (mp4boxMode === MP4BOX_MODE_DEMUX_ALL) {
     return getMp4boxDemuxAllCommands({
       inputFile,
       outputFolder,
@@ -409,10 +407,12 @@ function getMp4boxCommands({
     });
   }
 
+  // todo: scream
   return [];
 }
 
 interface GetMp4boxCommandsParams {
+  readonly mp4boxMode: Mp4BoxMode;
   readonly inputFile: string;
   readonly outputFolder: string;
   readonly tempFolder: string;
@@ -428,6 +428,7 @@ interface ConvertSingleMediaParams {
   readonly outputFolder: string;
   readonly tempFolder: string;
   readonly selectedTrackIds?: readonly number[] | undefined;
+  readonly mp4boxMode: Mp4BoxMode;
 }
 
 type ConvertSingleMediaResponse =
@@ -461,6 +462,7 @@ interface ConvertMediaParams {
   readonly output: string;
   readonly tempFolder: string;
   readonly selectedTrackIds?: readonly number[];
+  readonly mp4boxMode: Mp4BoxMode;
 }
 
 type ConvertMediaResponse =
