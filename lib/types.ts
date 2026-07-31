@@ -42,6 +42,8 @@ export interface MediaInfo {
 
 export type Track = VideoTrack | AudioTrack | SubtitleTrack;
 
+export type SupportedVideoTrack = VideoTrack & { readonly __brand__: "SupportedVideoTrack" };
+
 export interface VideoTrack {
   readonly type: typeof trackTypeVideo;
   readonly streamOrder: number;
@@ -78,6 +80,14 @@ export interface VideoTrack {
   readonly forced: boolean;
 }
 
+export type SupportedAudioTrack = AudioTrack & { readonly __brand__: "SupportedAudioTrack" };
+
+export type NeedsConversionAudioTrack = AudioTrack & {
+  readonly __brand__: "NeedsConversionAudioTrack";
+};
+
+export type CommentaryAudioTrack = AudioTrack & { readonly __brand__: "CommentaryAudioTrack" };
+
 export interface AudioTrack {
   readonly type: typeof trackTypeAudio;
   readonly streamOrder: number;
@@ -104,6 +114,10 @@ export interface AudioTrack {
   readonly default: boolean;
   readonly forced: boolean;
 }
+
+export type CommentarySubtitleTrack = SubtitleTrack & {
+  readonly __brand__: "CommentarySubtitleTrack";
+};
 
 export interface SubtitleTrack {
   readonly type: typeof trackTypeSubtitle;

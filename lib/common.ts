@@ -1,4 +1,14 @@
-import type { AudioTrack, SubtitleTrack, Track, VideoTrack } from "./types.ts";
+import type {
+  AudioTrack,
+  CommentaryAudioTrack,
+  CommentarySubtitleTrack,
+  NeedsConversionAudioTrack,
+  SubtitleTrack,
+  SupportedAudioTrack,
+  SupportedVideoTrack,
+  Track,
+  VideoTrack,
+} from "./types.ts";
 import {
   type MediaExtension,
   FORMAT_MP4_TIMED_TEXT,
@@ -103,19 +113,15 @@ function isRecommendedSubtitle(track: SubtitleTrack): boolean {
     track.streamSize > 0 &&
     isSupportedSubtitleByTv(track) &&
     !track.forced &&
-    !isCommentaryTrack(track) &&
+    !isCommentarySubtitleTrack(track) &&
     ["en", "eng", "en-US"].includes(track.language)
   );
 }
 
 function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudioTracksResult {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve
   const candidates = tracks.filter(
-    (track) =>
-      isAudioTrack(track) &&
-      !isCommentaryTrack(track) &&
-      isSupportedAudioOrNeedsConversionForTv(track),
-  ) as AudioTrack[]; // todo: better way?
+    (track) => !isCommentaryAudioTrack(track) && isSupportedAudioOrNeedsConversionForTv(track),
+  );
 
   const languages = candidates.reduce((acc, track) => {
     return acc.add(track.language);
@@ -132,8 +138,8 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
     return { tracks: candidates, hasForeignAudioOnly };
   }
 
-  const supported = candidates.filter((track) => isSupportedAudioByTv(track));
-  const convertible = candidates.filter((track) => isAudioNeedsConversionForTv(track));
+  const supported = candidates.filter(isSupportedAudioByTv);
+  const convertible = candidates.filter(isAudioNeedsConversionForTv);
 
   // simple keep all supported
   if (isEmpty(convertible)) {
@@ -170,11 +176,23 @@ interface GetRecommendedAudioTracksResult {
   readonly hasForeignAudioOnly: boolean;
 }
 
-function isCommentaryTrack(track: AudioTrack | SubtitleTrack): boolean {
+function isCommentaryAudioTrack(track: Track): track is CommentaryAudioTrack {
+  if (!isAudioTrack(track)) return false;
+  return isCommentaryTrack(track);
+}
+
+function isCommentarySubtitleTrack(track: Track): track is CommentarySubtitleTrack {
+  if (!isSubtitleTrack(track)) return false;
+  return isCommentaryTrack(track);
+}
+
+function isCommentaryTrack(track: Track): boolean {
   return /commentary/iu.test(track.title ?? "");
 }
 
-function getPreferredConvertibleAudioTrack(tracks: readonly AudioTrack[]): AudioTrack | undefined {
+function getPreferredConvertibleAudioTrack(
+  tracks: readonly NeedsConversionAudioTrack[],
+): NeedsConversionAudioTrack | undefined {
   if (tracks.length === 0) {
     return undefined;
   }
@@ -214,22 +232,21 @@ function hasMultiChannels(track: AudioTrack): boolean {
   return (track.channels ?? 0) > 4;
 }
 
-function getSupportedVideoTracksByTv(tracks: readonly Track[]): VideoTrack | undefined {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve
-  const video = tracks.filter(
-    (track) => isVideoTrack(track) && isSupportedVideoByTv(track),
-  ) as VideoTrack[]; // todo: better way?
+function getSupportedVideoTracksByTv(tracks: readonly Track[]): SupportedVideoTrack | undefined {
+  const videoTracks = tracks.filter(isSupportedVideoTrackByTv);
 
-  if (video.length > 1) {
+  if (videoTracks.length > 1) {
     // todo: better way? assertLengthEq1?
     // todo: warn user if multiple video track found vs check what can mp4 support?
     throw new Error("This should not happen usually :)");
   }
 
-  return video[0];
+  return videoTracks[0];
 }
 
-function isSupportedVideoByTv(track: VideoTrack): boolean {
+// todo: valibot v.brand?
+function isSupportedVideoTrackByTv(track: Track): track is SupportedVideoTrack {
+  if (!isVideoTrack(track)) return false;
   return !isDolbyVisionProfile7(track);
 }
 
@@ -246,15 +263,18 @@ export function isUnsupportedAudioAndNotConvertibleForTv(track: AudioTrack): boo
   return !isSupportedAudioOrNeedsConversionForTv(track);
 }
 
-function isSupportedAudioOrNeedsConversionForTv(track: AudioTrack): boolean {
+function isSupportedAudioOrNeedsConversionForTv(
+  track: Track,
+): track is SupportedAudioTrack | NeedsConversionAudioTrack {
+  if (!isAudioTrack(track)) return false;
   return isSupportedAudioByTv(track) || isAudioNeedsConversionForTv(track);
 }
 
-export function isSupportedAudioByTv(track: AudioTrack): boolean {
+export function isSupportedAudioByTv(track: AudioTrack): track is SupportedAudioTrack {
   return supportedAudioFormatsByTv.includes(track.format);
 }
 
-export function isAudioNeedsConversionForTv(track: AudioTrack): boolean {
+export function isAudioNeedsConversionForTv(track: AudioTrack): track is NeedsConversionAudioTrack {
   return audioFormatsNeedsConversionForTv.includes(track.format);
 }
 
@@ -279,7 +299,7 @@ export function isSubtitleTrack(track: Track): track is SubtitleTrack {
   return track.type === trackTypeSubtitle;
 }
 
-export function getTrackExtension(track: Track): string {
+export function getTrackExtension(track: Track): MediaExtension {
   const extension = formatToExtensionMap.get(track.format);
   assertIsDefined(
     extension,
