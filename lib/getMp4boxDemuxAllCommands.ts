@@ -118,11 +118,11 @@ export function getMp4boxDemuxAllCommands({
     assertIsDefined(meta);
 
     const file = meta.convertedFile ?? meta.extractedFile;
-    const language = "language" in track ? track.language : undefined;
+    const { language } = track;
 
     // todo: we might wanna improve on fallback title, thats what we might see in player, tv
     //  we use it for video as well but we could use general.title/movie instead
-    const title = "title" in track ? (track.title ?? language) : language;
+    const title = track.title ?? language;
     const trackId = index + 1;
     return [
       // note: execFile doesn't like "" wrapping

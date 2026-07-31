@@ -143,12 +143,12 @@ export function getMp4boxImportSelectedOnlyCommands({
     const trackId = index + 1;
     const isTrackIdChanged = trackId !== expectedTrackId;
     previousExpectedTrackId = expectedTrackId;
-    const language = "language" in track ? track.language : undefined;
+    const { language } = track;
 
     // todo: we might wanna improve on fallback title, thats what we might see in player, tv
     //  we use it for video as well but we could use general.title/movie instead
     // todo: better fallback could be English etc
-    const title = "title" in track ? (track.title ?? language) : undefined;
+    const title = track.title ?? language;
 
     return [
       // note: execFile doesn't like "" wrapping

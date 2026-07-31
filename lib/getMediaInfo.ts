@@ -107,6 +107,8 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
             chromaSubsampling: rawTrack.ChromaSubsampling,
             bitDepth: rawTrack.BitDepth,
             streamSize: rawTrack.StreamSize,
+            title: rawTrack.Title,
+            language: rawTrack.Language,
             default: rawTrack.Default,
             forced: rawTrack.Forced,
           } satisfies VideoTrack;

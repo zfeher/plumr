@@ -67,6 +67,8 @@ export interface VideoTrack {
   readonly chromaSubsampling: string;
   readonly bitDepth: number;
   readonly streamSize: number;
+  readonly title: string | undefined;
+  readonly language: string | undefined;
   readonly default: boolean;
   readonly forced: boolean;
 }
