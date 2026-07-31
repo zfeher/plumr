@@ -6,6 +6,12 @@ import {
   trackTypeAudio,
   trackTypeText,
   trackTypeMenu,
+  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+  MP4BOX_MODE_DEMUX_ALL,
+  DEFAULT_OUTPUT_FOLDER,
+  DEFAULT_TEMP_FOLDER,
+  DEFAULT_MP4BOX_MODE,
 } from "./constants.ts";
 
 const OpStringSchema = v.exactOptional(v.string());
@@ -15,6 +21,38 @@ const IntegerSchema = v.pipe(NumberSchema, v.integer());
 const OpIntegerSchema = v.exactOptional(IntegerSchema);
 const Str2BooleanSchema = v.pipe(v.string(), v.parseBoolean());
 const OpStr2BooleanSchema = v.exactOptional(Str2BooleanSchema);
+const NonEmptyStringSchema = v.pipe(v.string(), v.nonEmpty());
+const OpNonEmptyStringSchema = v.exactOptional(NonEmptyStringSchema);
+
+const ArgsValues = v.pipe(
+  v.strictObject({
+    input: OpNonEmptyStringSchema,
+    output: v.fallback(NonEmptyStringSchema, DEFAULT_OUTPUT_FOLDER),
+    "temp-folder": v.fallback(NonEmptyStringSchema, DEFAULT_TEMP_FOLDER),
+
+    "mp4box-mode": v.fallback(
+      v.picklist([
+        MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+        MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+        MP4BOX_MODE_DEMUX_ALL,
+      ]),
+      DEFAULT_MP4BOX_MODE,
+    ),
+
+    help: v.fallback(v.boolean(), false),
+  }),
+  v.readonly(),
+);
+
+export const Args = v.pipe(
+  v.strictObject({
+    values: ArgsValues,
+    positionals: v.pipe(v.array(v.string()), v.empty(), v.readonly()),
+  }),
+  v.readonly(),
+);
+
+type Args = v.InferOutput<typeof Args>;
 
 const GeneralTrackExtraRaw = v.pipe(
   v.strictObject({

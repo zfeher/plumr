@@ -1,3 +1,6 @@
+export const DEFAULT_OUTPUT_FOLDER = "T:/__watch_list__/__plumr__";
+export const DEFAULT_TEMP_FOLDER = "T:/temp/plumr";
+
 export const MP4BOX_MODE_IMPORT_SELECTED_ONLY = "importSelectedOnly";
 export const MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE = "importAllThenRemove";
 export const MP4BOX_MODE_DEMUX_ALL = "demuxAll";

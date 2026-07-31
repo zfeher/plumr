@@ -1,14 +1,20 @@
 import { parseArgs, type ParseArgsOptionsConfig } from "node:util";
 import path from "node:path";
+// oxlint-disable-next-line id-length
+import * as v from "valibot";
+
 import pkgJson from "../package.json" with { type: "json" };
-import { convertMedia } from "./convertMedia.ts";
+
+import { Args } from "./schemas.ts";
 import {
   MP4BOX_MODE_IMPORT_SELECTED_ONLY,
   MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
   MP4BOX_MODE_DEMUX_ALL,
   DEFAULT_MP4BOX_MODE,
+  DEFAULT_OUTPUT_FOLDER,
+  DEFAULT_TEMP_FOLDER,
 } from "./constants.ts";
-import type { Mp4BoxMode } from "./types.ts";
+import { convertMedia } from "./convertMedia.ts";
 
 await main();
 
@@ -16,32 +22,26 @@ async function main(): Promise<void> {
   console.log();
   console.log(`Plumr v${pkgJson.version}`);
 
-  const { values } = parseArgs({ options: getParseArgsOptions() });
-  const hasInputOption = "input" in values;
+  const parseArgsResult = parseArgs({ options: getParseArgsOptions(), strict: false });
+  const schemaParseResult = v.safeParse(Args, parseArgsResult);
 
-  // oxlint-disable-next-line typescript/strict-boolean-expressions - todo: resolve
-  if (values["help"] || !hasInputOption) {
+  if (!schemaParseResult.success) {
     printHelp();
-    return;
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
-  const input = values["input"] as string;
-
-  if (!input) {
-    printHelp();
-    console.error("[ERROR]: input file or folder is required");
+    console.error("[ERROR]: check your args");
     console.log();
     return;
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
-  const output = values["output"] as string;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
-  const tempFolder = values["temp-folder"] as string;
+  const { values: argValues } = schemaParseResult.output;
+  const { input } = argValues;
+
+  if (argValues.help || !input) {
+    printHelp();
+    return;
+  }
+
+  const { output, "temp-folder": tempFolder, "mp4box-mode": mp4boxMode } = argValues;
   const outputIsFolder = path.extname(output) === "";
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve schema validation
-  const mp4boxMode = values["mp4box-mode"] as Mp4BoxMode;
 
   console.log();
   console.log("temp folder:", tempFolder);
@@ -100,13 +100,13 @@ function getParseArgsOptions(): ParseArgsOptionsConfig {
     output: {
       type: "string",
       short: "o",
-      default: "T:/__watch_list__/__plumr__",
+      default: DEFAULT_OUTPUT_FOLDER,
     },
 
     "temp-folder": {
       type: "string",
       short: "t",
-      default: "T:/temp/plumr",
+      default: DEFAULT_TEMP_FOLDER,
     },
 
     "mp4box-mode": {
