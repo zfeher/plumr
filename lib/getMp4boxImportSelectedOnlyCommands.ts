@@ -39,8 +39,6 @@ export function getMp4boxImportSelectedOnlyCommands({
 
     if (!isConvertibleAudioTr && !isSubtitleTrack(track)) return acc;
 
-    // todo: here track becomes `never` which we might wanna look into sometime :)
-
     const trackId = track.id;
     acc.set(track, {
       extractedFile: path.join(tempMediaDir, `track${trackId}.${getTrackExtension(track)}`),

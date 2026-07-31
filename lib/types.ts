@@ -1,10 +1,15 @@
 import type {
+  AudioFormat,
+  MediaExtension,
+  MediaFormat,
   MP4BOX_MODE_DEMUX_ALL,
   MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
   MP4BOX_MODE_IMPORT_SELECTED_ONLY,
+  SubtitleFormat,
   trackTypeAudio,
   trackTypeSubtitle,
   trackTypeVideo,
+  VideoFormat,
 } from "./constants.ts";
 
 export type Mp4BoxMode =
@@ -18,8 +23,8 @@ export interface MediaInfo {
   readonly general: {
     readonly ref: string;
     readonly uniqueId: string;
-    readonly fileExtension: string;
-    readonly format: string;
+    readonly fileExtension: MediaExtension;
+    readonly format: MediaFormat;
     readonly formatVersion: number;
     readonly fileSize: number;
     readonly duration: number;
@@ -42,7 +47,7 @@ export interface VideoTrack {
   readonly streamOrder: number;
   readonly id: number;
   readonly uniqueId: string;
-  readonly format: string;
+  readonly format: VideoFormat;
   readonly formatProfile: string;
   readonly formatLevel: number;
   readonly formatTier: string | undefined;
@@ -78,7 +83,7 @@ export interface AudioTrack {
   readonly streamOrder: number;
   readonly id: number;
   readonly uniqueId: string;
-  readonly format: string;
+  readonly format: AudioFormat;
   readonly formatCommercialIfAny: string | undefined;
   readonly formatSettings: string | undefined;
   readonly formatAdditionalFeatures: string | undefined;
@@ -106,7 +111,7 @@ export interface SubtitleTrack {
   readonly streamOrder: number;
   readonly id: number;
   readonly uniqueId: string;
-  readonly format: string;
+  readonly format: SubtitleFormat;
   readonly codecId: string;
   readonly duration: number;
   readonly bitRate: number;

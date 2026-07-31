@@ -1,5 +1,6 @@
 import type { AudioTrack, SubtitleTrack, Track, VideoTrack } from "./types.ts";
 import {
+  type MediaExtension,
   FORMAT_MP4_TIMED_TEXT,
   HDR_FORMAT_DOLBY_VISION,
   audioFormatsNeedsConversionForTv,
@@ -12,7 +13,10 @@ import {
   trackTypeVideo,
 } from "./constants.ts";
 
-export function isAlreadySupportedByTv(fileExtension: string, tracks: readonly Track[]): boolean {
+export function isAlreadySupportedByTv(
+  fileExtension: MediaExtension,
+  tracks: readonly Track[],
+): boolean {
   return (
     hasSupportedVideoByTvAndContainer(fileExtension, tracks) &&
     hasSufficientSupportedAudioByTv(tracks)
@@ -20,7 +24,7 @@ export function isAlreadySupportedByTv(fileExtension: string, tracks: readonly T
 }
 
 function hasSupportedVideoByTvAndContainer(
-  containerExtension: string,
+  containerExtension: MediaExtension,
   tracks: readonly Track[],
 ): boolean {
   const video = getSupportedVideoTracksByTv(tracks);
@@ -35,10 +39,8 @@ function hasSupportedVideoByTvAndContainer(
   return true;
 }
 
-function isSupportedDolbyVisionContainerByTv(extension: string): boolean {
-  // todo: resolve: schema validation could help
-  // oxlint-disable-next-line typescript/no-explicit-any typescript/no-unsafe-argument typescript/no-unsafe-type-assertion
-  return supportedDolbyVisionContainersByTv.includes(extension as any);
+function isSupportedDolbyVisionContainerByTv(extension: MediaExtension): boolean {
+  return supportedDolbyVisionContainersByTv.includes(extension);
 }
 
 function hasSufficientSupportedAudioByTv(tracks: readonly Track[]): boolean {
@@ -249,15 +251,11 @@ function isSupportedAudioOrNeedsConversionForTv(track: AudioTrack): boolean {
 }
 
 export function isSupportedAudioByTv(track: AudioTrack): boolean {
-  // todo: resolve: schema validation could help
-  // oxlint-disable-next-line typescript/no-explicit-any typescript/no-unsafe-argument typescript/no-unsafe-type-assertion
-  return supportedAudioFormatsByTv.includes(track.format as any);
+  return supportedAudioFormatsByTv.includes(track.format);
 }
 
 export function isAudioNeedsConversionForTv(track: AudioTrack): boolean {
-  // todo: resolve: schema validation could help
-  // oxlint-disable-next-line typescript/no-unsafe-argument typescript/no-unsafe-type-assertion typescript/no-explicit-any
-  return audioFormatsNeedsConversionForTv.includes(track.format as any);
+  return audioFormatsNeedsConversionForTv.includes(track.format);
 }
 
 export function isUnsupportedSubtitleByTv(track: SubtitleTrack): boolean {

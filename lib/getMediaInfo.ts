@@ -60,7 +60,7 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
     general: {
       ref: rawMediaInfo.media["@ref"],
       uniqueId: rawGeneral.UniqueID,
-      fileExtension: rawGeneral.FileExtension.toLowerCase(),
+      fileExtension: rawGeneral.FileExtension,
       format: rawGeneral.Format,
       formatVersion: rawGeneral.Format_Version,
       fileSize: rawGeneral.FileSize,

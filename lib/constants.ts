@@ -30,14 +30,49 @@ export const FORMAT_PGS = "PGS";
 export const FORMAT_UTF8 = "UTF-8";
 export const FORMAT_MP4_TIMED_TEXT = "Timed Text";
 
-export const audioFormatsNeedsConversionForTv = [FORMAT_TRUE_HD, FORMAT_DTS] as const;
+export const videoFormats = [
+  FORMAT_MATROSKA,
+  FORMAT_MPEG_4,
+  FORMAT_MPEG_TS,
+  FORMAT_HEVC,
+  FORMAT_AVC,
+] as const;
 
-export const supportedAudioFormatsByTv = [
+export type VideoFormat = (typeof videoFormats)[number];
+
+export const audioFormats = [
+  FORMAT_AAC,
+  FORMAT_AC3,
+  FORMAT_EAC3,
+  FORMAT_DTS,
+  FORMAT_OPUS,
+  FORMAT_TRUE_HD,
+] as const;
+
+export type AudioFormat = (typeof audioFormats)[number];
+
+export const subtitleFormats = [
+  FORMAT_ASS,
+  FORMAT_PGS,
+  FORMAT_UTF8,
+  FORMAT_MP4_TIMED_TEXT,
+] as const;
+export type SubtitleFormat = (typeof subtitleFormats)[number];
+
+export const mediaFormats = [...videoFormats, ...audioFormats, ...subtitleFormats] as const;
+export type MediaFormat = (typeof mediaFormats)[number];
+
+export const audioFormatsNeedsConversionForTv: readonly AudioFormat[] = [
+  FORMAT_TRUE_HD,
+  FORMAT_DTS,
+];
+
+export const supportedAudioFormatsByTv: readonly AudioFormat[] = [
   FORMAT_EAC3,
   FORMAT_AC3,
   FORMAT_AAC,
   FORMAT_OPUS,
-] as const;
+];
 
 export const EXTENSION_H265 = "h265";
 export const EXTENSION_H264 = "h264";
@@ -56,11 +91,32 @@ export const EXTENSION_ASS = "ass";
 export const EXTENSION_SRT = "srt";
 export const EXTENSION_SUP = "sup";
 
-export const supportedDolbyVisionContainersByTv = [
+export const mediaExtensions = [
+  EXTENSION_H265,
+  EXTENSION_H264,
+  EXTENSION_EAC3,
+  EXTENSION_AC3,
+  EXTENSION_AAC,
+  EXTENSION_DTS,
+  EXTENSION_M2TS,
+  EXTENSION_META,
+  EXTENSION_MKV,
+  EXTENSION_MP4,
+  EXTENSION_TS,
+  EXTENSION_OPUS,
+  EXTENSION_TRUE_HD,
+  EXTENSION_ASS,
+  EXTENSION_SRT,
+  EXTENSION_SUP,
+] as const;
+
+export type MediaExtension = (typeof mediaExtensions)[number];
+
+export const supportedDolbyVisionContainersByTv: readonly MediaExtension[] = [
   EXTENSION_MP4,
   EXTENSION_TS,
   EXTENSION_M2TS,
-] as const;
+];
 
 export const HDR_FORMAT_DOLBY_VISION = "Dolby Vision";
 export const HDR_FORMAT_DOLBY_VISION_HDR10 = "Dolby Vision / SMPTE ST 2086";
@@ -68,32 +124,39 @@ export const HDR_FORMAT_DOLBY_VISION_HDR10_PLUS = "Dolby Vision / SMPTE ST 2094 
 export const HDR_FORMAT_HDR10_PLUS = "SMPTE ST 2094 App 4";
 export const HDR_FORMAT_HDR10 = "SMPTE ST 2086";
 
-export const mp4BoxBrandCompatFlags = [
+export const mp4BoxBrandCompatFlags: readonly string[] = [
   ["-brand", "mp42"],
   ["-ab", "isom"],
   ["-ab", "dby1"],
 ].flat();
 
-export const mp4BoxDvheFlags = ["--force_dv", "--xps_inband=all", ["-hdr", "none"]].flat();
+export const mp4BoxDvheFlags: readonly string[] = [
+  "--force_dv",
+  "--xps_inband=all",
+  ["-hdr", "none"],
+].flat();
 
-export const formatToExtensionMap = new Map<string, string>()
-  .set(FORMAT_HEVC, EXTENSION_H265)
-  .set(FORMAT_AVC, EXTENSION_H264)
-  .set(FORMAT_AC3, EXTENSION_AC3)
-  .set(FORMAT_AAC, EXTENSION_AAC)
-  .set(FORMAT_DTS, EXTENSION_DTS)
-  .set(FORMAT_EAC3, EXTENSION_EAC3)
-  .set(FORMAT_TRUE_HD, EXTENSION_TRUE_HD)
-  .set(FORMAT_ASS, EXTENSION_ASS)
-  .set(FORMAT_PGS, EXTENSION_SUP)
-  .set(FORMAT_UTF8, EXTENSION_SRT);
+// todo: readonly map
+export const formatToExtensionMap = new Map<MediaFormat, MediaExtension>([
+  [FORMAT_HEVC, EXTENSION_H265],
+  [FORMAT_AVC, EXTENSION_H264],
+  [FORMAT_AC3, EXTENSION_AC3],
+  [FORMAT_AAC, EXTENSION_AAC],
+  [FORMAT_DTS, EXTENSION_DTS],
+  [FORMAT_EAC3, EXTENSION_EAC3],
+  [FORMAT_TRUE_HD, EXTENSION_TRUE_HD],
+  [FORMAT_ASS, EXTENSION_ASS],
+  [FORMAT_PGS, EXTENSION_SUP],
+  [FORMAT_UTF8, EXTENSION_SRT],
+]);
 
 // todo: don't forget to add TrueHD if it gets introduced as a known format
-const preferredConvertibleAudioOrder = [
+const preferredConvertibleAudioOrder: readonly string[] = [
   `${FORMAT_TRUE_HD} 16-ch, Dolby TrueHD with Dolby Atmos`,
   `${FORMAT_DTS} XLL X, DTS-HD MA + DTS:X`,
   `${FORMAT_DTS} XLL, DTS-HD Master Audio`,
   FORMAT_DTS,
 ];
 
-export const reversedPreferredConvertibleAudioOrder = preferredConvertibleAudioOrder.toReversed();
+export const reversedPreferredConvertibleAudioOrder: readonly string[] =
+  preferredConvertibleAudioOrder.toReversed();
