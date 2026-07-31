@@ -1,0 +1,258 @@
+// oxlint-disable-next-line id-length
+import * as v from "valibot";
+import {
+  trackTypeGeneral,
+  trackTypeVideo,
+  trackTypeAudio,
+  trackTypeText,
+  trackTypeMenu,
+} from "./constants.ts";
+
+const OpStringSchema = v.exactOptional(v.string());
+const NumberSchema = v.pipe(v.string(), v.toNumber());
+const OpNumberSchema = v.exactOptional(NumberSchema);
+const IntegerSchema = v.pipe(NumberSchema, v.integer());
+const OpIntegerSchema = v.exactOptional(IntegerSchema);
+const Str2BooleanSchema = v.pipe(v.string(), v.parseBoolean());
+const OpStr2BooleanSchema = v.exactOptional(Str2BooleanSchema);
+
+const GeneralTrackRaw = v.pipe(
+  v.object({
+    "@type": v.literal(trackTypeGeneral),
+    UniqueID: v.string(),
+    VideoCount: IntegerSchema,
+    AudioCount: IntegerSchema,
+    TextCount: IntegerSchema,
+    MenuCount: OpIntegerSchema,
+    FileExtension: v.string(),
+    Format: v.string(),
+    Format_Version: IntegerSchema,
+    FileSize: IntegerSchema,
+    Duration: NumberSchema,
+    OverallBitRate: IntegerSchema,
+    FrameRate: NumberSchema,
+    FrameCount: IntegerSchema,
+    StreamSize: OpIntegerSchema,
+    IsStreamable: Str2BooleanSchema,
+    Title: OpStringSchema,
+    Movie: OpStringSchema,
+    Encoded_Date: OpStringSchema,
+    File_Created_Date: v.string(),
+    File_Created_Date_Local: v.string(),
+    File_Modified_Date: v.string(),
+    File_Modified_Date_Local: v.string(),
+    Encoded_Application: v.string(),
+    Encoded_Application_Name: OpStringSchema,
+    Encoded_Application_Version: OpStringSchema,
+    Encoded_Library: v.string(),
+  }),
+  v.readonly(),
+);
+
+type GeneralTrackRaw = v.InferOutput<typeof GeneralTrackRaw>;
+
+const VideoTrackRaw = v.pipe(
+  v.object({
+    "@type": v.literal(trackTypeVideo),
+    StreamOrder: IntegerSchema,
+    ID: IntegerSchema,
+    UniqueID: v.string(),
+    Format: v.string(),
+    Format_Profile: v.string(),
+    Format_Level: IntegerSchema,
+    Format_Tier: OpStringSchema,
+    HDR_Format: OpStringSchema,
+    HDR_Format_Version: OpStringSchema,
+    HDR_Format_Profile: OpStringSchema,
+    HDR_Format_Level: OpStringSchema,
+    HDR_Format_Settings: OpStringSchema,
+    HDR_Format_Compression: OpStringSchema,
+    HDR_Format_Compatibility: OpStringSchema,
+    CodecID: v.string(),
+    Duration: NumberSchema,
+    BitRate: IntegerSchema,
+    Width: IntegerSchema,
+    Height: IntegerSchema,
+    Stored_Width: OpIntegerSchema,
+    Sampled_Width: IntegerSchema,
+    Sampled_Height: IntegerSchema,
+    PixelAspectRatio: NumberSchema,
+    DisplayAspectRatio: NumberSchema,
+    FrameRate_Mode: v.string(),
+    FrameRate: NumberSchema,
+    FrameRate_Num: IntegerSchema,
+    FrameRate_Den: IntegerSchema,
+    FrameCount: IntegerSchema,
+    ColorSpace: v.string(),
+    ChromaSubsampling: v.string(),
+    ChromaSubsampling_Position: OpStringSchema,
+    BitDepth: IntegerSchema,
+    Delay: NumberSchema,
+    Delay_Source: v.string(),
+    StreamSize: IntegerSchema,
+    Default: Str2BooleanSchema,
+    Forced: Str2BooleanSchema,
+    colour_description_present: OpStr2BooleanSchema,
+    colour_description_present_Source: OpStringSchema,
+    colour_range: OpStringSchema,
+    colour_range_Source: OpStringSchema,
+    colour_primaries: OpStringSchema,
+    colour_primaries_Source: OpStringSchema,
+    transfer_characteristics: OpStringSchema,
+    transfer_characteristics_Source: OpStringSchema,
+    matrix_coefficients: OpStringSchema,
+    matrix_coefficients_Source: OpStringSchema,
+    MasteringDisplay_ColorPrimaries: OpStringSchema,
+    MasteringDisplay_ColorPrimaries_Source: OpStringSchema,
+    MasteringDisplay_Luminance: OpStringSchema,
+    MasteringDisplay_Luminance_Source: OpStringSchema,
+    MasteringDisplay_Luminance_Min: OpNumberSchema,
+    MasteringDisplay_Luminance_Max: OpIntegerSchema,
+    MaxCLL: OpIntegerSchema,
+    MaxCLL_Source: OpStringSchema,
+    MaxFALL: OpIntegerSchema,
+    MaxFALL_Source: OpStringSchema,
+  }),
+  v.readonly(),
+);
+
+type VideoTrackRaw = v.InferOutput<typeof VideoTrackRaw>;
+
+const AudioTrackExtraRaw = v.pipe(
+  v.object({
+    ComplexityIndex: OpIntegerSchema,
+    NumberOfDynamicObjects: OpIntegerSchema,
+    BedChannelCount: OpIntegerSchema,
+    BedChannelConfiguration: OpStringSchema,
+    bsid: IntegerSchema,
+    dialnorm: IntegerSchema,
+    compr: NumberSchema,
+    acmod: v.string(),
+    lfeon: v.string(),
+    dialnorm_Average: IntegerSchema,
+    dialnorm_Minimum: IntegerSchema,
+    compr_Average: NumberSchema,
+    compr_Minimum: NumberSchema,
+    compr_Maximum: NumberSchema,
+    compr_Count: IntegerSchema,
+  }),
+  v.readonly(),
+);
+
+type AudioTrackExtraRaw = v.InferOutput<typeof AudioTrackExtraRaw>;
+
+const AudioTrackRaw = v.pipe(
+  v.object({
+    "@type": v.literal(trackTypeAudio),
+    StreamOrder: IntegerSchema,
+    ID: IntegerSchema,
+    UniqueID: v.string(),
+    Format: v.string(),
+    Format_Commercial_IfAny: OpStringSchema,
+    Format_Settings_Mode: OpStringSchema,
+    Format_Settings_Endianness: OpStringSchema,
+    Format_AdditionalFeatures: OpStringSchema,
+    CodecID: v.string(),
+    Duration: NumberSchema,
+    BitRate_Mode: OpStringSchema,
+    BitRate: IntegerSchema,
+    Channels: IntegerSchema,
+    ChannelPositions: v.string(),
+    ChannelLayout: v.string(),
+    SamplesPerFrame: IntegerSchema,
+    SamplingRate: IntegerSchema,
+    SamplingCount: IntegerSchema,
+    FrameRate: NumberSchema,
+    FrameCount: IntegerSchema,
+    Compression_Mode: v.string(),
+    Delay: NumberSchema,
+    Delay_Source: v.string(),
+    Video_Delay: NumberSchema,
+    StreamSize: IntegerSchema,
+    Title: OpStringSchema,
+    Language: v.string(), // en, eng, en-US, ...
+    ServiceKind: OpStringSchema,
+    Default: Str2BooleanSchema,
+    Forced: Str2BooleanSchema,
+    extra: v.exactOptional(AudioTrackExtraRaw),
+  }),
+  v.readonly(),
+);
+
+type AudioTrackRaw = v.InferOutput<typeof AudioTrackRaw>;
+
+const TextTrackRaw = v.pipe(
+  v.object({
+    "@type": v.literal(trackTypeText),
+    "@typeorder": OpIntegerSchema,
+    StreamOrder: IntegerSchema,
+    ID: IntegerSchema,
+    UniqueID: v.string(),
+    Format: v.string(),
+    CodecID: v.string(),
+    Duration: NumberSchema,
+    BitRate: IntegerSchema,
+    FrameRate: OpNumberSchema,
+    FrameCount: IntegerSchema,
+    ElementCount: IntegerSchema,
+    StreamSize: IntegerSchema,
+    Title: OpStringSchema,
+    Language: v.string(), // hu, hun, hu-HU, ...
+    Default: Str2BooleanSchema,
+    Forced: Str2BooleanSchema,
+  }),
+  v.readonly(),
+);
+
+type TextTrackRaw = v.InferOutput<typeof TextTrackRaw>;
+
+const MenuTrackRaw = v.pipe(
+  v.object({
+    "@type": v.literal(trackTypeMenu),
+    extra: v.pipe(v.record(v.string(), v.string()), v.readonly()),
+  }),
+  v.readonly(),
+);
+
+type MenuTrackRaw = v.InferOutput<typeof MenuTrackRaw>;
+
+const TrackRaw = v.variant("@type", [
+  GeneralTrackRaw,
+  VideoTrackRaw,
+  AudioTrackRaw,
+  TextTrackRaw,
+  MenuTrackRaw,
+]);
+
+type TrackRaw = v.InferOutput<typeof TrackRaw>;
+
+const MediaRaw = v.pipe(
+  v.object({
+    "@ref": v.string(),
+    track: v.pipe(v.array(TrackRaw), v.readonly()),
+  }),
+  v.readonly(),
+);
+
+type MediaRaw = v.InferOutput<typeof MediaRaw>;
+
+const CreatingLibraryRaw = v.pipe(
+  v.object({
+    name: v.string(),
+    version: v.string(),
+    url: v.string(),
+  }),
+  v.readonly(),
+);
+
+type CreatingLibraryRaw = v.InferOutput<typeof CreatingLibraryRaw>;
+
+export const MediaInfoRaw = v.pipe(
+  v.object({
+    creatingLibrary: CreatingLibraryRaw,
+    media: MediaRaw,
+  }),
+  v.readonly(),
+);
+
+export type MediaInfoRaw = v.InferOutput<typeof MediaInfoRaw>;

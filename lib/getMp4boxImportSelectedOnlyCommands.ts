@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { Audio, MediaInfo, Track, Video } from "./types.ts";
+import type { AudioTrack, MediaInfo, Track, VideoTrack } from "./types.ts";
 import {
   EXTENSION_AC3,
   EXTENSION_MP4,
@@ -143,7 +143,7 @@ export function getMp4boxImportSelectedOnlyCommands({
     const trackId = index + 1;
     const isTrackIdChanged = trackId !== expectedTrackId;
     previousExpectedTrackId = expectedTrackId;
-    const { language } = track;
+    const language = "language" in track ? track.language : undefined;
 
     // todo: we might wanna improve on fallback title, thats what we might see in player, tv
     //  we use it for video as well but we could use general.title/movie instead
@@ -224,6 +224,6 @@ interface GetMp4boxImportSelectedOnlyCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: Video;
-  readonly audio: readonly Audio[];
+  readonly video: VideoTrack;
+  readonly audio: readonly AudioTrack[];
 }

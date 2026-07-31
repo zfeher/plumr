@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { Audio, MediaInfo, Subtitle, Track } from "./types.ts";
+import type { AudioTrack, MediaInfo, SubtitleTrack, Track } from "./types.ts";
 import { EXTENSION_AC3, EXTENSION_MKV } from "./constants.ts";
 
 import {
@@ -183,6 +183,6 @@ interface GetMkvmergeCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly audio: readonly Audio[];
-  readonly subtitle: readonly Subtitle[];
+  readonly audio: readonly AudioTrack[];
+  readonly subtitle: readonly SubtitleTrack[];
 }

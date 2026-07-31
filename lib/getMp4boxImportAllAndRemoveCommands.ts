@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import type { Audio, MediaInfo, Track, Video } from "./types.ts";
+import type { AudioTrack, MediaInfo, Track, VideoTrack } from "./types.ts";
 import {
   EXTENSION_AC3,
   EXTENSION_MP4,
@@ -216,6 +216,6 @@ interface GetMp4boxImportAllAndRemoveCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: Video;
-  readonly audio: readonly Audio[];
+  readonly video: VideoTrack;
+  readonly audio: readonly AudioTrack[];
 }

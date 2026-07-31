@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import { promisify } from "node:util";
 import child_process from "node:child_process";
+// oxlint-disable-next-line id-length
+import * as v from "valibot";
 
-import type { Audio, MediaInfo, Subtitle, Video } from "./types.ts";
+import type { AudioTrack, MediaInfo, SubtitleTrack, VideoTrack } from "./types.ts";
 import {
   trackTypeAudio,
   trackTypeGeneral,
@@ -12,6 +14,7 @@ import {
   trackTypeVideo,
 } from "./constants.ts";
 import { getRecommendedTracks, isAlreadySupportedByTv } from "./common.ts";
+import { MediaInfoRaw } from "./schemas.ts";
 
 // oxlint-disable-next-line typescript/strict-void-return
 const execFile = promisify(child_process.execFile);
@@ -33,14 +36,16 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
 
   const result = await execFile("mediainfo", ["--output=JSON", normalizedFile]);
 
-  // todo: Zod or lighter alternative usage (valibot)
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion - todo: resolve properly
-  const rawMediaInfo = JSON.parse(result.stdout) as MediaInfoRaw;
+  const parseResult = v.safeParse(MediaInfoRaw, JSON.parse(result.stdout));
 
-  console.log("@@@@ getMediaInfo: raw", JSON.stringify(rawMediaInfo, null, 2));
+  if (!parseResult.success) {
+    console.log(parseResult.issues);
+    console.log(JSON.stringify(parseResult.issues));
+    return;
+  }
 
+  const rawMediaInfo = parseResult.output;
   const rawGeneral = rawMediaInfo.media.track.find((track) => track["@type"] === trackTypeGeneral);
-
   if (!rawGeneral) return;
 
   const hasMenu = rawMediaInfo.media.track.some((track) => track["@type"] === trackTypeMenu);
@@ -58,9 +63,9 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
       fileExtension: rawGeneral.FileExtension.toLowerCase(),
       format: rawGeneral.Format,
       formatVersion: rawGeneral.Format_Version,
-      fileSize: Number(rawGeneral.FileSize),
-      duration: Number(rawGeneral.Duration),
-      overallBitrate: Number(rawGeneral.OverallBitRate),
+      fileSize: rawGeneral.FileSize,
+      duration: rawGeneral.Duration,
+      overallBitrate: rawGeneral.OverallBitRate,
       frameRate: rawGeneral.FrameRate,
       title: rawGeneral.Title,
       movie: rawGeneral.Movie,
@@ -74,8 +79,8 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
         if (rawTrack["@type"] === trackTypeVideo) {
           return {
             type: trackTypeVideo,
-            streamOrder: Number(rawTrack.StreamOrder),
-            id: Number(rawTrack.ID),
+            streamOrder: rawTrack.StreamOrder,
+            id: rawTrack.ID,
             uniqueId: rawTrack.UniqueID,
             format: rawTrack.Format,
             formatProfile: rawTrack.Format_Profile,
@@ -88,76 +93,74 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
             hdrFormatSettings: rawTrack.HDR_Format_Settings,
             hdrFormatCompatibility: rawTrack.HDR_Format_Compatibility,
             codecId: rawTrack.CodecID,
-            duration: Number(rawTrack.Duration),
-            bitRate: Number(rawTrack.BitRate),
-            width: Number(rawTrack.Width),
-            height: Number(rawTrack.Height),
-            sampledWidth: Number(rawTrack.Sampled_Width),
-            sampledHeight: Number(rawTrack.Sampled_Height),
+            duration: rawTrack.Duration,
+            bitRate: rawTrack.BitRate,
+            width: rawTrack.Width,
+            height: rawTrack.Height,
+            sampledWidth: rawTrack.Sampled_Width,
+            sampledHeight: rawTrack.Sampled_Height,
             pixelAspectRatio: rawTrack.PixelAspectRatio,
             displayAspectRatio: rawTrack.DisplayAspectRatio,
             frameRateMode: rawTrack.FrameRate_Mode,
             frameRate: rawTrack.FrameRate,
             colorSpace: rawTrack.ColorSpace,
             chromaSubsampling: rawTrack.ChromaSubsampling,
-            bitDepth: Number(rawTrack.BitDepth),
-            streamSize: Number(rawTrack.StreamSize),
-            language: rawTrack.Language,
-            default: /yes/iu.test(rawTrack.Default),
-            forced: /yes/iu.test(rawTrack.Forced),
-          } satisfies Video;
+            bitDepth: rawTrack.BitDepth,
+            streamSize: rawTrack.StreamSize,
+            default: rawTrack.Default,
+            forced: rawTrack.Forced,
+          } satisfies VideoTrack;
         }
 
         if (rawTrack["@type"] === trackTypeAudio) {
           return {
             type: trackTypeAudio,
-            streamOrder: Number(rawTrack.StreamOrder),
-            id: Number(rawTrack.ID),
+            streamOrder: rawTrack.StreamOrder,
+            id: rawTrack.ID,
             uniqueId: rawTrack.UniqueID,
             format: rawTrack.Format,
             formatCommercialIfAny: rawTrack.Format_Commercial_IfAny,
             formatSettings: rawTrack.Format_Settings_Mode,
             formatAdditionalFeatures: rawTrack.Format_AdditionalFeatures,
             codecId: rawTrack.CodecID,
-            duration: Number(rawTrack.Duration),
+            duration: rawTrack.Duration,
             bitRateMode: rawTrack.BitRate_Mode,
-            bitRate: Number(rawTrack.BitRate),
-            channels: rawTrack.Channels ? Number(rawTrack.Channels) : undefined,
+            bitRate: rawTrack.BitRate,
+            channels: rawTrack.Channels,
             channelLayout: rawTrack.ChannelLayout,
-            samplingRate: Number(rawTrack.SamplingRate),
+            samplingRate: rawTrack.SamplingRate,
             frameRate: rawTrack.FrameRate,
             compressionMode: rawTrack.Compression_Mode,
-            delay: Number(rawTrack.Delay),
-            videoDelay: Number(rawTrack.Video_Delay),
-            streamSize: Number(rawTrack.StreamSize),
+            delay: rawTrack.Delay,
+            videoDelay: rawTrack.Video_Delay,
+            streamSize: rawTrack.StreamSize,
             title: rawTrack.Title,
             language: rawTrack.Language,
-            default: /yes/iu.test(rawTrack.Default),
-            forced: /yes/iu.test(rawTrack.Forced),
-          } satisfies Audio;
+            default: rawTrack.Default,
+            forced: rawTrack.Forced,
+          } satisfies AudioTrack;
         }
 
         if (rawTrack["@type"] === trackTypeText) {
           return {
             type: trackTypeSubtitle,
-            typeorder: Number(rawTrack["@typeorder"]),
-            streamOrder: Number(rawTrack.StreamOrder),
-            id: Number(rawTrack.ID),
+            typeorder: rawTrack["@typeorder"],
+            streamOrder: rawTrack.StreamOrder,
+            id: rawTrack.ID,
             uniqueId: rawTrack.UniqueID,
             format: rawTrack.Format,
-            muxingMode: rawTrack.MuxingMode,
             codecId: rawTrack.CodecID,
             duration: rawTrack.Duration,
-            bitRate: Number(rawTrack.BitRate),
-            frameRate: Number(rawTrack.FrameRate),
-            frameCount: Number(rawTrack.FrameCount),
-            elementCount: Number(rawTrack.ElementCount),
-            streamSize: Number(rawTrack.StreamSize),
+            bitRate: rawTrack.BitRate,
+            frameRate: rawTrack.FrameRate,
+            frameCount: rawTrack.FrameCount,
+            elementCount: rawTrack.ElementCount,
+            streamSize: rawTrack.StreamSize,
             title: rawTrack.Title,
             language: rawTrack.Language,
-            default: /yes/iu.test(rawTrack.Default),
-            forced: /yes/iu.test(rawTrack.Forced),
-          } satisfies Subtitle;
+            default: rawTrack.Default,
+            forced: rawTrack.Forced,
+          } satisfies SubtitleTrack;
         }
 
         throw new Error(`Unsupported track type (${rawTrack["@type"]}).`);
@@ -204,174 +207,4 @@ interface GetMediaInfoResult {
   readonly hasForeignAudioOnly: boolean;
   readonly isAlreadySupported: boolean;
   readonly isTrackAndStreamOrderDifferent: boolean;
-}
-
-interface MediaInfoRaw {
-  readonly creatingLibrary: CreatingLibraryRaw;
-  readonly media: MediaRaw;
-}
-
-interface CreatingLibraryRaw {
-  readonly name: string;
-  readonly version: string;
-  readonly url: string;
-}
-
-interface MediaRaw {
-  readonly "@ref": string;
-  readonly track: readonly TrackRaw[];
-}
-
-type TrackRaw = GeneralRaw | VideoRaw | AudioRaw | TextRaw | MenuRaw;
-
-interface GeneralRaw {
-  readonly "@type": typeof trackTypeGeneral;
-  readonly UniqueID: string;
-  readonly VideoCount: string;
-  readonly AudioCount: string;
-  readonly TextCount?: string;
-  readonly MenuCount?: string;
-  readonly FileExtension: string;
-  readonly Format: string;
-  readonly Format_Profile?: string;
-  readonly Format_Version: string;
-  readonly CodecID?: string;
-  readonly CodecID_Compatible?: string;
-  readonly FileSize: string;
-  readonly Duration: string;
-  readonly OverallBitRate: string;
-  readonly OverallBitRate_Mode?: string;
-  readonly FrameRate: string;
-  readonly FrameCount: string;
-  readonly StreamSize: string;
-  readonly IsStreamable: string;
-  readonly Title?: string;
-  readonly Movie?: string;
-  readonly Encoded_Date: string;
-  readonly File_Created_Date: string;
-  readonly File_Created_Date_Local: string;
-  readonly File_Modified_Date: string;
-  readonly File_Modified_Date_Local: string;
-  readonly Encoded_Application: string;
-  readonly Encoded_Library: string;
-}
-
-interface VideoRaw {
-  readonly "@type": typeof trackTypeVideo;
-  readonly StreamOrder: string;
-  readonly ID: string;
-  readonly UniqueID: string;
-  readonly Format: string;
-  readonly Format_Profile: string;
-  readonly Format_Level: string;
-  readonly Format_Tier?: string;
-  readonly HDR_Format?: string;
-  readonly HDR_Format_Version?: string;
-  readonly HDR_Format_Profile?: string;
-  readonly HDR_Format_Level?: string;
-  readonly HDR_Format_Settings?: string;
-  readonly HDR_Format_Compatibility?: string;
-  readonly CodecID: string;
-  readonly Duration: string;
-  readonly BitRate: string;
-  readonly Width: string;
-  readonly Height: string;
-  readonly Sampled_Width: string;
-  readonly Sampled_Height: string;
-  readonly PixelAspectRatio: string;
-  readonly DisplayAspectRatio: string;
-  readonly FrameRate_Mode: string;
-  readonly FrameRate: string;
-  readonly FrameRate_Num: string;
-  readonly FrameRate_Den: string;
-  readonly FrameCount: string;
-  readonly ColorSpace: string;
-  readonly ChromaSubsampling: string;
-  readonly BitDepth: string;
-  readonly Delay: string;
-  readonly Delay_Source: string;
-  readonly StreamSize: string;
-  readonly Language?: string;
-  readonly Default: string;
-  readonly Forced: string;
-}
-
-interface AudioRaw {
-  readonly "@type": typeof trackTypeAudio;
-  readonly StreamOrder: string;
-  readonly ID: string;
-  readonly UniqueID: string;
-  readonly Format: string;
-  readonly Format_Commercial_IfAny?: string;
-  readonly Format_Settings_Mode?: string;
-  readonly Format_Settings_Endianness?: string;
-  readonly Format_Settings_SBR?: string;
-  readonly Format_AdditionalFeatures?: string;
-  readonly CodecID: string;
-  readonly Duration: string;
-  readonly BitRate_Mode: string;
-  readonly BitRate: string;
-  readonly Channels?: string;
-  readonly ChannelPositions?: string;
-  readonly ChannelLayout?: string;
-  readonly SamplesPerFrame: string;
-  readonly SamplingRate: string;
-  readonly SamplingCount: string;
-  readonly FrameRate: string;
-  readonly FrameCount: string;
-  readonly Compression_Mode: string;
-  readonly Delay: string;
-  readonly Delay_Source: string;
-  readonly Video_Delay: string;
-  readonly StreamSize: string;
-  readonly Title?: string;
-  readonly Language: string;
-  readonly ServiceKind: string;
-  readonly Default: string;
-  readonly Forced: string;
-  readonly extra: AudioExtraRaw;
-}
-
-interface AudioExtraRaw {
-  readonly ComplexityIndex: string;
-  readonly NumberOfDynamicObjects: string;
-  readonly BedChannelCount: string;
-  readonly BedChannelConfiguration: string;
-  readonly bsid: string;
-  readonly dialnorm: string;
-  readonly compr: string;
-  readonly acmod: string;
-  readonly lfeon: string;
-  readonly dialnorm_Average: string;
-  readonly dialnorm_Minimum: string;
-  readonly compr_Average: string;
-  readonly compr_Minimum: string;
-  readonly compr_Maximum: string;
-  readonly compr_Count: string;
-}
-
-interface TextRaw {
-  readonly "@type": typeof trackTypeText;
-  readonly "@typeorder": string;
-  readonly StreamOrder: string;
-  readonly ID: string;
-  readonly UniqueID: string;
-  readonly Format: string;
-  readonly MuxingMode: string;
-  readonly CodecID: string;
-  readonly Duration: string;
-  readonly BitRate: string;
-  readonly FrameRate: string;
-  readonly FrameCount: string;
-  readonly ElementCount: string;
-  readonly StreamSize: string;
-  readonly Title: string;
-  readonly Language: string;
-  readonly Default: string;
-  readonly Forced: string;
-}
-
-interface MenuRaw {
-  readonly "@type": typeof trackTypeMenu;
-  readonly extra: Record<string, string>;
 }

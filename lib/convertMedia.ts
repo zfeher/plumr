@@ -2,7 +2,14 @@ import fs from "node:fs/promises";
 import fss from "node:fs";
 import path from "node:path";
 
-import type { Audio, MediaInfo, Mp4BoxMode, Subtitle, Track, Video } from "./types.ts";
+import type {
+  AudioTrack,
+  MediaInfo,
+  Mp4BoxMode,
+  SubtitleTrack,
+  Track,
+  VideoTrack,
+} from "./types.ts";
 import {
   EXTENSION_MKV,
   FORMAT_MATROSKA,
@@ -187,9 +194,9 @@ async function convertSingleMedia(
   });
 
   const { video, audio, subtitle } = selectedTracks.reduce<{
-    video: Video | undefined;
-    audio: Audio[];
-    subtitle: Subtitle[];
+    video: VideoTrack | undefined;
+    audio: AudioTrack[];
+    subtitle: SubtitleTrack[];
   }>(
     (acc, track) => {
       if (isVideoTrack(track) && acc.video !== undefined) {
@@ -406,8 +413,8 @@ interface GetMp4boxCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: Video;
-  readonly audio: readonly Audio[];
+  readonly video: VideoTrack;
+  readonly audio: readonly AudioTrack[];
 }
 
 // todo: better way, reuse ConvertMediaParams somehow?

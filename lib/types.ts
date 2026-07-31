@@ -20,14 +20,14 @@ export interface MediaInfo {
     readonly uniqueId: string;
     readonly fileExtension: string;
     readonly format: string;
-    readonly formatVersion: string;
+    readonly formatVersion: number;
     readonly fileSize: number;
     readonly duration: number;
     readonly overallBitrate: number;
-    readonly frameRate: string;
+    readonly frameRate: number;
     readonly title: string | undefined;
     readonly movie: string | undefined;
-    readonly encodedDate: string;
+    readonly encodedDate: string | undefined;
     readonly encodedApplication: string;
     readonly encodedLibrary: string;
   };
@@ -35,16 +35,16 @@ export interface MediaInfo {
   readonly tracks: readonly Track[];
 }
 
-export type Track = Video | Audio | Subtitle;
+export type Track = VideoTrack | AudioTrack | SubtitleTrack;
 
-export interface Video {
+export interface VideoTrack {
   readonly type: typeof trackTypeVideo;
   readonly streamOrder: number;
   readonly id: number;
   readonly uniqueId: string;
   readonly format: string;
   readonly formatProfile: string;
-  readonly formatLevel: string;
+  readonly formatLevel: number;
   readonly formatTier: string | undefined;
   readonly hdrFormat: string | undefined;
   readonly hdrFormatVersion: string | undefined;
@@ -59,20 +59,19 @@ export interface Video {
   readonly height: number;
   readonly sampledWidth: number;
   readonly sampledHeight: number;
-  readonly pixelAspectRatio: string;
-  readonly displayAspectRatio: string;
+  readonly pixelAspectRatio: number;
+  readonly displayAspectRatio: number;
   readonly frameRateMode: string;
-  readonly frameRate: string;
+  readonly frameRate: number;
   readonly colorSpace: string;
   readonly chromaSubsampling: string;
   readonly bitDepth: number;
   readonly streamSize: number;
-  readonly language: string | undefined;
   readonly default: boolean;
   readonly forced: boolean;
 }
 
-export interface Audio {
+export interface AudioTrack {
   readonly type: typeof trackTypeAudio;
   readonly streamOrder: number;
   readonly id: number;
@@ -83,12 +82,12 @@ export interface Audio {
   readonly formatAdditionalFeatures: string | undefined;
   readonly codecId: string;
   readonly duration: number;
-  readonly bitRateMode: string;
+  readonly bitRateMode: string | undefined;
   readonly bitRate: number;
-  readonly channels: number | undefined;
-  readonly channelLayout: string | undefined;
+  readonly channels: number;
+  readonly channelLayout: string;
   readonly samplingRate: number;
-  readonly frameRate: string;
+  readonly frameRate: number;
   readonly compressionMode: string;
   readonly delay: number;
   readonly videoDelay: number;
@@ -99,22 +98,21 @@ export interface Audio {
   readonly forced: boolean;
 }
 
-export interface Subtitle {
+export interface SubtitleTrack {
   readonly type: typeof trackTypeSubtitle;
-  readonly typeorder: number;
+  readonly typeorder: number | undefined;
   readonly streamOrder: number;
   readonly id: number;
   readonly uniqueId: string;
   readonly format: string;
-  readonly muxingMode: string;
   readonly codecId: string;
-  readonly duration: string;
+  readonly duration: number;
   readonly bitRate: number;
-  readonly frameRate: number;
+  readonly frameRate: number | undefined;
   readonly frameCount: number;
   readonly elementCount: number;
   readonly streamSize: number;
-  readonly title: string;
+  readonly title: string | undefined;
   readonly language: string;
   readonly default: boolean;
   readonly forced: boolean;

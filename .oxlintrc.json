@@ -75,6 +75,7 @@
     "id-length": ["error", { "checkGeneric": false }],
     "no-ternary": "off",
     "unicorn/filename-case": ["error", { "cases": { "camelCase": true, "pascalCase": true } }],
+    "unicorn/max-nested-calls": "off",
     "unicorn/no-null": "off"
   },
   //
