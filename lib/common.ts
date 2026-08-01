@@ -24,12 +24,13 @@ import {
 } from "./constants.ts";
 
 export function isAlreadySupportedByTv(
-  fileExtension: MediaExtension,
+  extension: MediaExtension,
   tracks: readonly Track[],
+  keepHu: boolean,
 ): boolean {
   return (
-    hasSupportedVideoByTvAndContainer(fileExtension, tracks) &&
-    hasSufficientSupportedAudioByTv(tracks)
+    hasSupportedVideoByTvAndContainer(extension, tracks) &&
+    hasSufficientSupportedAudioByTv(tracks, keepHu)
   );
 }
 
@@ -53,14 +54,17 @@ function isSupportedDolbyVisionContainerByTv(extension: MediaExtension): boolean
   return supportedDolbyVisionContainersByTv.includes(extension);
 }
 
-function hasSufficientSupportedAudioByTv(tracks: readonly Track[]): boolean {
-  const { tracks: recommended } = getRecommendedAudioTracks(tracks);
+function hasSufficientSupportedAudioByTv(tracks: readonly Track[], keepHu: boolean): boolean {
+  const { tracks: recommended } = getRecommendedAudioTracks(tracks, keepHu);
   return hasItems(recommended) && none(isAudioNeedsConversionForTv, recommended);
 }
 
-export function getRecommendedTracks(tracks: readonly Track[]): GetRecommendedTracksResult {
+export function getRecommendedTracks(
+  tracks: readonly Track[],
+  keepHu: boolean,
+): GetRecommendedTracksResult {
   const recommendedVideo = getSupportedVideoTracksByTv(tracks);
-  const recommendedAudio = getRecommendedAudioTracks(tracks);
+  const recommendedAudio = getRecommendedAudioTracks(tracks, keepHu);
   const recommendedSubtitle = getRecommendedSubtitleTracks(tracks);
   return {
     hasRecommendedVideo: recommendedVideo !== undefined,
@@ -119,8 +123,11 @@ function isRecommendedSubtitle(track: SubtitleTrack): boolean {
   );
 }
 
-function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudioTracksResult {
-  const candidates = tracks.filter(
+function getRecommendedAudioTracks(
+  tracks: readonly Track[],
+  keepHu: boolean,
+): GetRecommendedAudioTracksResult {
+  let candidates = tracks.filter(
     (track) => !isCommentaryAudioTrack(track) && isSupportedAudioOrNeedsConversionForTv(track),
   );
 
@@ -139,6 +146,14 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
   // single audio easy 🙂
   if (candidates.length === 1) {
     return { tracks: candidates, hasForeignAudioOnly };
+  }
+
+  if (!keepHu) {
+    candidates = candidates.filter(
+      (track) => !["hu", "hun"].includes(track.language.replace(/-.*$/u, "")),
+    );
+    audioLanguages.delete("hu");
+    audioLanguages.delete("hun");
   }
 
   const supported = candidates.filter(isSupportedAudioByTv);
@@ -174,10 +189,10 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
   return { tracks: recommended, hasForeignAudioOnly };
 }
 
-interface GetRecommendedAudioTracksResult {
-  readonly tracks: readonly AudioTrack[];
-  readonly hasForeignAudioOnly: boolean;
-}
+type GetRecommendedAudioTracksResult = Readonly<{
+  tracks: readonly AudioTrack[];
+  hasForeignAudioOnly: boolean;
+}>;
 
 function isCommentaryAudioTrack(track: Track): track is CommentaryAudioTrack {
   if (!isAudioTrack(track)) return false;

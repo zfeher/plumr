@@ -40,12 +40,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  const { output, "temp-folder": tempFolder, "mp4box-mode": mp4boxMode } = argValues;
+  const {
+    "keep-hu": keepHu,
+    output,
+    "temp-folder": tempFolder,
+    "mp4box-mode": mp4boxMode,
+  } = argValues;
   const outputIsFolder = path.extname(output) === "";
 
   console.log();
   console.log("temp folder:", tempFolder);
   console.log("input:", input);
+  console.log("keep-hu:", keepHu);
   if (outputIsFolder) {
     console.log("output folder:", output);
   } else {
@@ -55,7 +61,7 @@ async function main(): Promise<void> {
 
   console.log();
 
-  const result = await convertMedia({ input, output, tempFolder, mp4boxMode });
+  const result = await convertMedia({ input, keepHu, output, tempFolder, mp4boxMode });
   console.log(JSON.stringify(result, null, 2));
   console.log();
 }
@@ -95,6 +101,10 @@ function getParseArgsOptions(): ParseArgsOptionsConfig {
     input: {
       type: "string",
       short: "i",
+    },
+
+    "keep-hu": {
+      type: "boolean",
     },
 
     output: {

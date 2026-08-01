@@ -31,7 +31,9 @@ const OpNonEmptyStringSchema = v.exactOptional(NonEmptyStringSchema);
 
 const ArgsValues = v.pipe(
   v.strictObject({
+    help: v.fallback(v.boolean(), false),
     input: OpNonEmptyStringSchema,
+    "keep-hu": v.fallback(v.boolean(), false),
     output: v.fallback(NonEmptyStringSchema, DEFAULT_OUTPUT_FOLDER),
     "temp-folder": v.fallback(NonEmptyStringSchema, DEFAULT_TEMP_FOLDER),
 
@@ -43,8 +45,6 @@ const ArgsValues = v.pipe(
       ]),
       DEFAULT_MP4BOX_MODE,
     ),
-
-    help: v.fallback(v.boolean(), false),
   }),
   v.readonly(),
 );

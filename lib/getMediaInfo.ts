@@ -19,7 +19,10 @@ import { MediaInfoRaw } from "./schemas.ts";
 // oxlint-disable-next-line typescript/strict-void-return
 const execFile = promisify(child_process.execFile);
 
-export async function getMediaInfo(file: string): Promise<void | GetMediaInfoResult> {
+export async function getMediaInfo(
+  file: string,
+  keepHu: boolean,
+): Promise<void | GetMediaInfoResult> {
   // note: mediainfo call like this doesn't like `"` wrapper nor `'`!
   // todo: better way? sooner?
   const normalizedFile = file.replace(/^['"]/u, "").replace(/['"]$/u, "");
@@ -34,9 +37,8 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
 
   // todo: cache data for filepath?
 
-  const result = await execFile("mediainfo", ["--output=JSON", normalizedFile]);
-
-  const parseResult = v.safeParse(MediaInfoRaw, JSON.parse(result.stdout));
+  const mediaInfoCliResult = await execFile("mediainfo", ["--output=JSON", normalizedFile]);
+  const parseResult = v.safeParse(MediaInfoRaw, JSON.parse(mediaInfoCliResult.stdout));
 
   if (!parseResult.success) {
     console.log(parseResult.issues);
@@ -175,10 +177,14 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
       }),
   };
 
-  const recommended = getRecommendedTracks(info.tracks);
+  const recommended = getRecommendedTracks(info.tracks, keepHu);
   const recommendedTrackIds = recommended.tracks.map((track) => track.id);
 
-  const isAlreadySupported = isAlreadySupportedByTv(info.general.fileExtension, info.tracks);
+  const isAlreadySupported = isAlreadySupportedByTv(
+    info.general.fileExtension,
+    info.tracks,
+    keepHu,
+  );
 
   const isTrackAndStreamOrderDifferent = info.tracks.some(
     (track) => track.id - 1 !== track.streamOrder,

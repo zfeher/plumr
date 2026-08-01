@@ -40,7 +40,7 @@ import { getMp4boxDemuxAllCommands } from "./getMp4boxDemuxAllCommands.ts";
 import { getMkvmergeCommands } from "./getMkvmergeCommands.ts";
 
 export async function convertMedia(options: ConvertMediaParams): Promise<ConvertMediaResponse> {
-  const { selectedTrackIds, mp4boxMode } = options;
+  const { selectedTrackIds, keepHu, mp4boxMode } = options;
   // todo: for now we remove "" wrapper ahead and see if it will be a problem
   const input = options.input.replace(/^['"]/u, "").replace(/['"]$/u, "");
   let outputFolder = options.output.replace(/^['"]/u, "").replace(/['"]$/u, "");
@@ -90,6 +90,7 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
         inputFile: mkvFile,
         outputFolder,
         tempFolder,
+        keepHu,
       });
 
       if (result.isAlreadySupported) {
@@ -112,6 +113,7 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
       outputFolder,
       tempFolder,
       selectedTrackIds,
+      keepHu,
     });
 
     if (result.isAlreadySupported) {
@@ -157,11 +159,11 @@ async function convertSingleMedia(
 ): Promise<ConvertSingleMediaResponse> {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const { inputFile, outputFolder, tempFolder, mp4boxMode } = options;
+  const { inputFile, keepHu, outputFolder, tempFolder, mp4boxMode } = options;
   let { selectedTrackIds } = options;
 
   // todo: use some cache for media info to avoid some wait twice ;)
-  const mediaInfoResult = await getMediaInfo(inputFile);
+  const mediaInfoResult = await getMediaInfo(inputFile, keepHu);
 
   if (!mediaInfoResult) {
     // todo: notify client side
@@ -307,6 +309,7 @@ async function convertSingleMedia(
   const isAlreadySupported = isAlreadySupportedByTv(
     mediaInfo.general.fileExtension,
     selectedTracks,
+    keepHu,
   );
 
   if (isAlreadySupported) {
@@ -408,25 +411,26 @@ function getMp4boxCommands({
   return [];
 }
 
-interface GetMp4boxCommandsParams {
-  readonly mp4boxMode: Mp4BoxMode;
-  readonly inputFile: string;
-  readonly outputFolder: string;
-  readonly tempFolder: string;
-  readonly mediaInfo: MediaInfo;
-  readonly selectedTracks: readonly Track[];
-  readonly videoTrack: VideoTrack;
-  readonly audioTracks: readonly AudioTrack[];
-}
+type GetMp4boxCommandsParams = Readonly<{
+  mp4boxMode: Mp4BoxMode;
+  inputFile: string;
+  outputFolder: string;
+  tempFolder: string;
+  mediaInfo: MediaInfo;
+  selectedTracks: readonly Track[];
+  videoTrack: VideoTrack;
+  audioTracks: readonly AudioTrack[];
+}>;
 
 // todo: better way, reuse ConvertMediaParams somehow?
-interface ConvertSingleMediaParams {
-  readonly inputFile: string;
-  readonly outputFolder: string;
-  readonly tempFolder: string;
-  readonly selectedTrackIds?: readonly number[] | undefined;
-  readonly mp4boxMode: Mp4BoxMode;
-}
+type ConvertSingleMediaParams = Readonly<{
+  inputFile: string;
+  keepHu: boolean;
+  outputFolder: string;
+  tempFolder: string;
+  selectedTrackIds?: readonly number[] | undefined;
+  mp4boxMode: Mp4BoxMode;
+}>;
 
 type ConvertSingleMediaResponse =
   | ConvertSingleMediaOkResponse
@@ -454,13 +458,14 @@ interface ConvertSingleMediaResponseBase {
   readonly isAlreadySupported: boolean;
 }
 
-interface ConvertMediaParams {
-  readonly input: string;
-  readonly output: string;
-  readonly tempFolder: string;
-  readonly selectedTrackIds?: readonly number[];
-  readonly mp4boxMode: Mp4BoxMode;
-}
+type ConvertMediaParams = Readonly<{
+  input: string;
+  keepHu: boolean;
+  output: string;
+  tempFolder: string;
+  selectedTrackIds?: readonly number[];
+  mp4boxMode: Mp4BoxMode;
+}>;
 
 type ConvertMediaResponse =
   | ConvertMediaOkResponse
