@@ -62,7 +62,9 @@ type Args = v.InferOutput<typeof Args>;
 const GeneralTrackExtraRaw = v.pipe(
   v.strictObject({
     ErrorDetectionType: OpStringSchema,
-    Attachments: v.string(),
+    Attachments: OpStringSchema,
+    IMDB: OpStringSchema,
+    TMDB: OpStringSchema,
   }),
   v.readonly(),
 );
@@ -113,9 +115,10 @@ const VideoTrackRaw = v.pipe(
     UniqueID: v.string(),
     Format: v.pipe(v.string(), v.picklist(videoFormats)),
     Format_Profile: v.string(),
-    Format_Level: IntegerSchema,
+    Format_Level: NumberSchema,
     Format_Settings_CABAC: OpStr2BooleanSchema,
     Format_Settings_RefFrames: OpIntegerSchema,
+    Format_Settings_SliceCount: OpIntegerSchema,
     Format_Tier: OpStringSchema,
     HDR_Format: OpStringSchema,
     HDR_Format_Version: OpStringSchema,
@@ -140,8 +143,8 @@ const VideoTrackRaw = v.pipe(
     FrameRate_Mode: v.string(),
     FrameRate_Mode_Original: OpStringSchema,
     FrameRate: NumberSchema,
-    FrameRate_Num: IntegerSchema,
-    FrameRate_Den: IntegerSchema,
+    FrameRate_Num: OpIntegerSchema,
+    FrameRate_Den: OpIntegerSchema,
     FrameCount: IntegerSchema,
     ColorSpace: v.string(),
     ChromaSubsampling: v.string(),
@@ -192,11 +195,17 @@ const AudioTrackExtraRaw = v.pipe(
     NumberOfDynamicObjects: OpIntegerSchema,
     BedChannelCount: OpIntegerSchema,
     BedChannelConfiguration: OpStringSchema,
+    Source: OpStringSchema,
     bsid: IntegerSchema,
     dialnorm: IntegerSchema,
-    compr: NumberSchema,
+    compr: OpNumberSchema,
+    dsurmod: OpIntegerSchema,
     acmod: v.string(),
     lfeon: OpStringSchema,
+    mixlevel: OpIntegerSchema,
+    roomtyp: OpStringSchema,
+    cmixlev: OpNumberSchema,
+    surmixlev: OpStringSchema,
     dmixmod: OpStringSchema,
     ltrtcmixlev: OpNumberSchema,
     ltrtsurmixlev: OpNumberSchema,
@@ -204,10 +213,14 @@ const AudioTrackExtraRaw = v.pipe(
     lorosurmixlev: OpNumberSchema,
     dialnorm_Average: IntegerSchema,
     dialnorm_Minimum: IntegerSchema,
-    compr_Average: NumberSchema,
-    compr_Minimum: NumberSchema,
-    compr_Maximum: NumberSchema,
-    compr_Count: IntegerSchema,
+    compr_Average: OpNumberSchema,
+    compr_Minimum: OpNumberSchema,
+    compr_Maximum: OpNumberSchema,
+    compr_Count: OpIntegerSchema,
+    dynrng_Average: OpNumberSchema,
+    dynrng_Minimum: OpNumberSchema,
+    dynrng_Maximum: OpNumberSchema,
+    dynrng_Count: OpNumberSchema,
   }),
   v.readonly(),
 );
@@ -255,6 +268,15 @@ const AudioTrackRaw = v.pipe(
 
 type AudioTrackRaw = v.InferOutput<typeof AudioTrackRaw>;
 
+const TextTrackExtraRaw = v.pipe(
+  v.strictObject({
+    Source: OpStringSchema,
+  }),
+  v.readonly(),
+);
+
+type TextTrackExtraRaw = v.InferOutput<typeof TextTrackExtraRaw>;
+
 const TextTrackRaw = v.pipe(
   v.strictObject({
     "@type": v.literal(trackTypeText),
@@ -263,6 +285,7 @@ const TextTrackRaw = v.pipe(
     ID: IntegerSchema,
     UniqueID: v.string(),
     Format: v.pipe(v.string(), v.picklist(subtitleFormats)),
+    MuxingMode: OpStringSchema,
     CodecID: v.string(),
     Duration: NumberSchema,
     BitRate: IntegerSchema,
@@ -276,6 +299,7 @@ const TextTrackRaw = v.pipe(
     ServiceKind: OpStringSchema,
     Default: Str2BooleanSchema,
     Forced: Str2BooleanSchema,
+    extra: v.exactOptional(TextTrackExtraRaw),
   }),
   v.readonly(),
 );

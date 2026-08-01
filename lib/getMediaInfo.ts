@@ -40,7 +40,7 @@ export async function getMediaInfo(file: string): Promise<void | GetMediaInfoRes
 
   if (!parseResult.success) {
     console.log(parseResult.issues);
-    console.log(JSON.stringify(parseResult.issues));
+    console.log(JSON.stringify(parseResult.issues, null, 2));
     return;
   }
 
