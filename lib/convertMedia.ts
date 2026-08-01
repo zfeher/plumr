@@ -193,31 +193,31 @@ async function convertSingleMedia(
     return infoTrack;
   });
 
-  const { video, audio, subtitle } = selectedTracks.reduce<{
-    video: VideoTrack | undefined;
-    audio: AudioTrack[];
-    subtitle: SubtitleTrack[];
+  const { videoTrack, audioTracks, subtitleTracks } = selectedTracks.reduce<{
+    videoTrack: VideoTrack | undefined;
+    audioTracks: AudioTrack[];
+    subtitleTracks: SubtitleTrack[];
   }>(
     (acc, track) => {
-      if (isVideoTrack(track) && acc.video !== undefined) {
+      if (isVideoTrack(track) && acc.videoTrack !== undefined) {
         // todo: better way?
         // todo: warn user if multiple video track found vs check what can mp4 support?
         throw new Error("This should not happen usually :)");
       }
 
-      if (isVideoTrack(track)) acc.video = track;
-      else if (isAudioTrack(track)) acc.audio.push(track);
-      else if (isSubtitleTrack(track)) acc.subtitle.push(track);
+      if (isVideoTrack(track)) acc.videoTrack = track;
+      else if (isAudioTrack(track)) acc.audioTracks.push(track);
+      else if (isSubtitleTrack(track)) acc.subtitleTracks.push(track);
       return acc;
     },
     {
-      video: undefined,
-      audio: [],
-      subtitle: [],
+      videoTrack: undefined,
+      audioTracks: [],
+      subtitleTracks: [],
     },
   );
 
-  if (!video) {
+  if (!videoTrack) {
     // todo: notify client side
     console.error("convertMedia: no video file is selected 🙃");
     // todo: how to do proper error handling via server actions? :)
@@ -225,7 +225,7 @@ async function convertSingleMedia(
     errors.push("no video file is selected 🙃");
   }
 
-  if (isEmpty(audio)) {
+  if (isEmpty(audioTracks)) {
     // todo: notify client side
     console.error("convertMedia: no audio track is selected, usually 1 should be 😉");
     // todo: how to do proper error handling via server actions? :)
@@ -233,7 +233,7 @@ async function convertSingleMedia(
     errors.push("no audio track is selected, usually 1 should be 😉");
   }
 
-  if (video && isDolbyVisionProfile7(video)) {
+  if (videoTrack && isDolbyVisionProfile7(videoTrack)) {
     // todo: notify client side
     console.error("convertMedia: dolby vision profile 7 video won't work 😥");
     // todo: how to do proper error handling via server actions? :)
@@ -241,7 +241,7 @@ async function convertSingleMedia(
     errors.push("dolby vision profile 7 video won't work 😥");
   }
 
-  if (audio.some(isUnsupportedAudioAndNotConvertibleForTv)) {
+  if (audioTracks.some(isUnsupportedAudioAndNotConvertibleForTv)) {
     // todo: notify client side
     console.error("convertMedia: unsupported/unconvertible audio selected 😟");
     // todo: how to do proper error handling via server actions? :)
@@ -249,7 +249,7 @@ async function convertSingleMedia(
     errors.push("unsupported/unconvertible audio selected 😟");
   }
 
-  if (subtitle.some(isUnsupportedSubtitleByTv)) {
+  if (subtitleTracks.some(isUnsupportedSubtitleByTv)) {
     // todo: notify client side
     console.error("convertMedia: unsupported subtitle selected 😟");
     // todo: how to do proper error handling via server actions? :)
@@ -258,17 +258,19 @@ async function convertSingleMedia(
   }
 
   // todo: duplicate-ish
-  const languages = audio.reduce((acc, track) => {
-    return acc.add(track.language);
+  const audioLanguages = audioTracks.reduce((acc, track) => {
+    // todo: vs properly handle
+    // en-US, en-AU => en
+    return acc.add(track.language.replace(/-.*$/u, ""));
   }, new Set<string>());
 
   const hasForeignAudioSelectedOnly = none(
-    (lang) => languages.has(lang),
+    (lang) => audioLanguages.has(lang),
     // todo: this is subjective for now 😉
-    ["en", "eng", "en-US", "hu", "hun", "hu-HU"],
+    ["en", "eng", "hu", "hun"],
   );
 
-  const hasSelectedSubtitles = hasItems(subtitle);
+  const hasSelectedSubtitles = hasItems(subtitleTracks);
 
   if (hasForeignAudioSelectedOnly) {
     // todo: we need to check selected subs count here :)
@@ -313,8 +315,8 @@ async function convertSingleMedia(
   }
 
   let commands: string[] = [];
-  if (isEmpty(errors) && video) {
-    commands = isDolbyVision(video)
+  if (isEmpty(errors) && videoTrack) {
+    commands = isDolbyVision(videoTrack)
       ? getMp4boxCommands({
           mp4boxMode,
           inputFile,
@@ -322,8 +324,8 @@ async function convertSingleMedia(
           tempFolder,
           mediaInfo,
           selectedTracks,
-          video,
-          audio,
+          videoTrack,
+          audioTracks,
         })
       : getMkvmergeCommands({
           inputFile,
@@ -331,8 +333,8 @@ async function convertSingleMedia(
           tempFolder,
           mediaInfo,
           selectedTracks,
-          audio,
-          subtitle,
+          audioTracks,
+          subtitleTracks,
         });
   }
 
@@ -361,8 +363,8 @@ function getMp4boxCommands({
   tempFolder,
   mediaInfo,
   selectedTracks,
-  video,
-  audio,
+  videoTrack,
+  audioTracks,
 }: GetMp4boxCommandsParams): string[] {
   // todo: we can do better, method => func map with same params could be nicer
   if (mp4boxMode === MP4BOX_MODE_IMPORT_SELECTED_ONLY) {
@@ -372,8 +374,8 @@ function getMp4boxCommands({
       tempFolder,
       mediaInfo,
       selectedTracks,
-      video,
-      audio,
+      videoTrack,
+      audioTracks,
     });
   }
 
@@ -384,8 +386,8 @@ function getMp4boxCommands({
       tempFolder,
       mediaInfo,
       selectedTracks,
-      video,
-      audio,
+      videoTrack,
+      audioTracks,
     });
   }
 
@@ -397,8 +399,8 @@ function getMp4boxCommands({
       tempFolder,
       mediaInfo,
       selectedTracks,
-      video,
-      audio,
+      videoTrack,
+      audioTracks,
     });
   }
 
@@ -413,8 +415,8 @@ interface GetMp4boxCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: VideoTrack;
-  readonly audio: readonly AudioTrack[];
+  readonly videoTrack: VideoTrack;
+  readonly audioTracks: readonly AudioTrack[];
 }
 
 // todo: better way, reuse ConvertMediaParams somehow?

@@ -114,7 +114,8 @@ function isRecommendedSubtitle(track: SubtitleTrack): boolean {
     isSupportedSubtitleByTv(track) &&
     !track.forced &&
     !isCommentarySubtitleTrack(track) &&
-    ["en", "eng", "en-US"].includes(track.language)
+    // todo: vs properly handle
+    ["en", "eng"].includes(track.language.replace(/-.*$/u, ""))
   );
 }
 
@@ -123,14 +124,16 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
     (track) => !isCommentaryAudioTrack(track) && isSupportedAudioOrNeedsConversionForTv(track),
   );
 
-  const languages = candidates.reduce((acc, track) => {
-    return acc.add(track.language);
+  const audioLanguages = candidates.reduce((acc, track) => {
+    // todo: vs properly handle
+    // en-Us, en-AU => en
+    return acc.add(track.language.replace(/-.*$/u, ""));
   }, new Set<string>());
 
   const hasForeignAudioOnly = none(
-    (lang) => languages.has(lang),
+    (lang) => audioLanguages.has(lang),
     // todo: this is subjective for now 😉
-    ["en", "eng", "en-US", "hu", "hun", "hu-HU"],
+    ["en", "eng", "hu", "hun"],
   );
 
   // single audio easy 🙂
@@ -147,7 +150,7 @@ function getRecommendedAudioTracks(tracks: readonly Track[]): GetRecommendedAudi
   }
 
   // multi lang we cannot automatically decide what to convert (origin lang not known)
-  if (languages.size > 1) {
+  if (audioLanguages.size > 1) {
     return { tracks: [], hasForeignAudioOnly };
   }
 

@@ -17,8 +17,8 @@ export function getMkvmergeCommands({
   tempFolder,
   mediaInfo,
   selectedTracks,
-  audio,
-  subtitle,
+  audioTracks,
+  subtitleTracks,
 }: GetMkvmergeCommandsParams): string[] {
   const commands: string[] = [];
 
@@ -27,8 +27,8 @@ export function getMkvmergeCommands({
 
   const tempMediaDir = path.join(tempFolder, mediaDir);
 
-  const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
-  const tracksMeta = convertibleAudio.reduce((acc, track, index) => {
+  const convertibleAudioTracks = audioTracks.filter(isAudioNeedsConversionForTv);
+  const tracksMeta = convertibleAudioTracks.reduce((acc, track, index) => {
     acc.set(track, {
       // note: we assume at least a video is imported from input so external FIDs
       //  will start from 1. feel free to rethink 😉
@@ -41,9 +41,9 @@ export function getMkvmergeCommands({
     return acc;
   }, new WeakMap<Track, TrackMeta>());
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     // todo: this is clearly duplicate
-    const extractTracksOptions = convertibleAudio.map((track) => {
+    const extractTracksOptions = convertibleAudioTracks.map((track) => {
       const meta = tracksMeta.get(track);
       assertIsDefined(meta);
 
@@ -79,12 +79,12 @@ export function getMkvmergeCommands({
   // }
 
   // todo: these feels like duplicates
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("rem #", "rem # convert audio files", "rem #");
   }
 
   // todo: alternative could be traversing tracksMeta
-  for (const track of convertibleAudio) {
+  for (const track of convertibleAudioTracks) {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -100,7 +100,7 @@ export function getMkvmergeCommands({
     // console.log(convertResult);
   }
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("");
   }
 
@@ -111,22 +111,24 @@ export function getMkvmergeCommands({
   // todo: notif user about progress
   // todo: notif user about errors, warnings etc
 
-  const supportedAudio = audio.filter(isSupportedAudioByTv);
+  const supportedAudioTracks = audioTracks.filter(isSupportedAudioByTv);
   // note: mkvmerge works with 0 based TIDs
-  const inputAudioTrackIds = supportedAudio.map((track) => track.id - 1);
+  const inputAudioTrackIds = supportedAudioTracks.map((track) => track.id - 1);
   // note: mkvmerge works with 0 based TIDs
-  const inputSubtitleTrackIds = subtitle.map((track) => track.id - 1);
+  const inputSubtitleTrackIds = subtitleTracks.map((track) => track.id - 1);
 
   const inputFlags = [
-    hasItems(supportedAudio) ? ["--audio-tracks", inputAudioTrackIds.join(",")] : ["--no-audio"],
-    hasItems(subtitle)
+    hasItems(supportedAudioTracks)
+      ? ["--audio-tracks", inputAudioTrackIds.join(",")]
+      : ["--no-audio"],
+    hasItems(subtitleTracks)
       ? ["--subtitle-tracks", inputSubtitleTrackIds.join(",")]
       : ["--no-subtitles"],
     `"${inputFile}"`,
   ].flat();
 
   // note: here we rely on that only convertible audio is extracted and converted
-  const externalFlags = convertibleAudio.flatMap((track) => {
+  const externalFlags = convertibleAudioTracks.flatMap((track) => {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -183,6 +185,6 @@ interface GetMkvmergeCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly audio: readonly AudioTrack[];
-  readonly subtitle: readonly SubtitleTrack[];
+  readonly audioTracks: readonly AudioTrack[];
+  readonly subtitleTracks: readonly SubtitleTrack[];
 }

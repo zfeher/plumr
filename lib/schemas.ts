@@ -257,7 +257,7 @@ const AudioTrackRaw = v.pipe(
     Video_Delay: NumberSchema,
     StreamSize: IntegerSchema,
     Title: OpStringSchema,
-    Language: v.string(), // en, eng, en-US, ...
+    Language: v.string(), // en, eng, en-US, en-AU, hu, hun, hu-HU ...
     ServiceKind: OpStringSchema,
     Default: Str2BooleanSchema,
     Forced: Str2BooleanSchema,

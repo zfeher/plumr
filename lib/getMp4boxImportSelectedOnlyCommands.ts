@@ -23,8 +23,8 @@ export function getMp4boxImportSelectedOnlyCommands({
   tempFolder,
   mediaInfo,
   selectedTracks,
-  video,
-  audio,
+  videoTrack,
+  audioTracks,
 }: GetMp4boxImportSelectedOnlyCommandsParams): string[] {
   const commands: string[] = [];
 
@@ -81,19 +81,19 @@ export function getMp4boxImportSelectedOnlyCommands({
     // console.log(extractResult);
   }
 
-  const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
+  const convertibleAudioTracks = audioTracks.filter(isAudioNeedsConversionForTv);
 
   // if (hasItems(convertibleAudio)) {
   //   console.log('converting audio track(s)...');
   // }
 
   // todo: these feels like duplicates
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("rem #", "rem # convert audio files", "rem #");
   }
 
   // todo: alternative could be traversing tracksMeta
-  for (const track of convertibleAudio) {
+  for (const track of convertibleAudioTracks) {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -109,7 +109,7 @@ export function getMp4boxImportSelectedOnlyCommands({
     // console.log(convertResult);
   }
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("");
   }
 
@@ -175,7 +175,7 @@ export function getMp4boxImportSelectedOnlyCommands({
     //  we skip qt menu for now because it causes track id glitches
     mediaInfo.hasMenu ? ["--chapm=udta"] : [],
     // todo: temp to check non DV stuff for muxing tests
-    isDolbyVision(video) ? mp4BoxDvheFlags : [],
+    isDolbyVision(videoTrack) ? mp4BoxDvheFlags : [],
     mp4BoxBrandCompatFlags,
     tempFlag,
     outputFlag,
@@ -222,6 +222,6 @@ interface GetMp4boxImportSelectedOnlyCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: VideoTrack;
-  readonly audio: readonly AudioTrack[];
+  readonly videoTrack: VideoTrack;
+  readonly audioTracks: readonly AudioTrack[];
 }

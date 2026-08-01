@@ -21,18 +21,18 @@ export function getMp4boxImportAllAndRemoveCommands({
   tempFolder,
   mediaInfo,
   selectedTracks,
-  video,
-  audio,
+  videoTrack,
+  audioTracks,
 }: GetMp4boxImportAllAndRemoveCommandsParams): string[] {
   const commands: string[] = [];
 
-  const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
+  const convertibleAudioTracks = audioTracks.filter(isAudioNeedsConversionForTv);
 
   // todo: these feels like duplicate
   const mediaDir = path.basename(inputFile).replace(`.${mediaInfo.general.fileExtension}`, "");
   const tempMediaDir = path.join(tempFolder, mediaDir);
 
-  const tracksMeta = convertibleAudio.reduce((acc, track) => {
+  const tracksMeta = convertibleAudioTracks.reduce((acc, track) => {
     acc.set(track, {
       extractedFile: path.join(tempMediaDir, `track${track.id}.${getTrackExtension(track)}`),
 
@@ -41,9 +41,9 @@ export function getMp4boxImportAllAndRemoveCommands({
     return acc;
   }, new WeakMap<Track, TrackMeta>());
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     // todo: this is clearly duplicate
-    const extractTracksOptions = convertibleAudio.map((track) => {
+    const extractTracksOptions = convertibleAudioTracks.map((track) => {
       const meta = tracksMeta.get(track);
       assertIsDefined(meta);
 
@@ -80,12 +80,12 @@ export function getMp4boxImportAllAndRemoveCommands({
   // }
 
   // todo: these feels like duplicates
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("rem #", "rem # convert audio files", "rem #");
   }
 
   // todo: alternative could be traversing tracksMeta
-  for (const track of convertibleAudio) {
+  for (const track of convertibleAudioTracks) {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -101,7 +101,7 @@ export function getMp4boxImportAllAndRemoveCommands({
     // console.log(convertResult);
   }
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("");
   }
 
@@ -117,7 +117,7 @@ export function getMp4boxImportAllAndRemoveCommands({
     .filter((track) => !selectedTrackIds.includes(track.id))
     .map((track) => track.id);
 
-  const convertibleAudioTrackIds = convertibleAudio.map((track) => track.id);
+  const convertibleAudioTrackIds = convertibleAudioTracks.map((track) => track.id);
 
   const trackIdsToBeRemoved = [convertibleAudioTrackIds, unselectedTrackIds].flat();
 
@@ -130,7 +130,7 @@ export function getMp4boxImportAllAndRemoveCommands({
   // note: if input has menu (nero style) gpac by default will add another menu
   //  track (qt style) which shifts the ids
   const newIdOffset = lastTrack ? lastTrack.id + (mediaInfo.hasMenu ? 1 : 0) : 0;
-  const addFlags = convertibleAudio.flatMap((track, index) => {
+  const addFlags = convertibleAudioTracks.flatMap((track, index) => {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -169,7 +169,7 @@ export function getMp4boxImportAllAndRemoveCommands({
     //  we skip qt menu for now because it causes track id glitches
     mediaInfo.hasMenu ? ["--chapm=udta"] : [],
     // todo: temp to check non DV stuff for muxing tests
-    isDolbyVision(video) ? mp4BoxDvheFlags : [],
+    isDolbyVision(videoTrack) ? mp4BoxDvheFlags : [],
     mp4BoxBrandCompatFlags,
     tempFlag,
     outputFlag,
@@ -216,6 +216,6 @@ interface GetMp4boxImportAllAndRemoveCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: VideoTrack;
-  readonly audio: readonly AudioTrack[];
+  readonly videoTrack: VideoTrack;
+  readonly audioTracks: readonly AudioTrack[];
 }

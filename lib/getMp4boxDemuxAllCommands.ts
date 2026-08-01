@@ -22,8 +22,8 @@ export function getMp4boxDemuxAllCommands({
   tempFolder,
   mediaInfo,
   selectedTracks,
-  video,
-  audio,
+  videoTrack,
+  audioTracks,
 }: GetMp4boxDemuxAllCommandsParams): string[] {
   const commands: string[] = [];
 
@@ -76,18 +76,18 @@ export function getMp4boxDemuxAllCommands({
   // console.log('extracting tracks is done');
   // console.log(extractResult);
 
-  const convertibleAudio = audio.filter(isAudioNeedsConversionForTv);
+  const convertibleAudioTracks = audioTracks.filter(isAudioNeedsConversionForTv);
 
   // if (hasItems(convertibleAudio)) {
   //   console.log('converting audio track(s)...');
   // }
 
   // todo: these feels like duplicates
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("rem #", "rem # convert audio files", "rem #");
   }
 
-  for (const track of convertibleAudio) {
+  for (const track of convertibleAudioTracks) {
     const meta = tracksMeta.get(track);
     assertIsDefined(meta);
 
@@ -104,7 +104,7 @@ export function getMp4boxDemuxAllCommands({
     // console.log(convertResult);
   }
 
-  if (hasItems(convertibleAudio)) {
+  if (hasItems(convertibleAudioTracks)) {
     commands.push("");
   }
 
@@ -146,7 +146,7 @@ export function getMp4boxDemuxAllCommands({
   const mp4boxOptions = [
     addFlags,
     // todo: temp to check non DV stuff for muxing tests
-    isDolbyVision(video) ? mp4BoxDvheFlags : [],
+    isDolbyVision(videoTrack) ? mp4BoxDvheFlags : [],
     mp4BoxBrandCompatFlags,
     tempFlag,
     outputFlag,
@@ -193,6 +193,6 @@ interface GetMp4boxDemuxAllCommandsParams {
   readonly tempFolder: string;
   readonly mediaInfo: MediaInfo;
   readonly selectedTracks: readonly Track[];
-  readonly video: VideoTrack;
-  readonly audio: readonly AudioTrack[];
+  readonly videoTrack: VideoTrack;
+  readonly audioTracks: readonly AudioTrack[];
 }
