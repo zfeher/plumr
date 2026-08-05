@@ -71,7 +71,11 @@ export async function convertMedia(options: ConvertMediaParams): Promise<Convert
     // console.log('@@@@ dirEntries', dirEntries);
 
     const mkvFiles = dirEntries
-      .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(`.${EXTENSION_MKV}`))
+      .filter(
+        (entry) =>
+          (entry.isFile() || entry.isSymbolicLink()) &&
+          entry.name.toLowerCase().endsWith(`.${EXTENSION_MKV}`),
+      )
       .map((entry) => path.join(entry.parentPath, entry.name));
 
     // console.log('@@@@ mkvFiles', mkvFiles);
