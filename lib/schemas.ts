@@ -309,6 +309,7 @@ type TextTrackRaw = v.InferOutput<typeof TextTrackRaw>;
 const MenuTrackRaw = v.pipe(
   v.strictObject({
     "@type": v.literal(trackTypeMenu),
+    "@typeorder": OpIntegerSchema,
     extra: v.pipe(v.record(v.string(), v.string()), v.readonly()),
   }),
   v.readonly(),
