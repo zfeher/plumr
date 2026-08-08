@@ -12,6 +12,7 @@ export const trackTypeVideo = "Video";
 export const trackTypeAudio = "Audio";
 export const trackTypeSubtitle = "Subtitle";
 export const trackTypeText = "Text";
+export const trackTypeImage = "Image";
 
 export const FORMAT_MATROSKA = "Matroska";
 export const FORMAT_MPEG_4 = "MPEG-4";

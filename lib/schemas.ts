@@ -1,22 +1,23 @@
 // oxlint-disable-next-line id-length
 import * as v from "valibot";
 import {
-  trackTypeGeneral,
-  trackTypeVideo,
-  trackTypeAudio,
-  trackTypeText,
-  trackTypeMenu,
-  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
-  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
-  MP4BOX_MODE_DEMUX_ALL,
+  audioFormats,
+  DEFAULT_MP4BOX_MODE,
   DEFAULT_OUTPUT_FOLDER,
   DEFAULT_TEMP_FOLDER,
-  DEFAULT_MP4BOX_MODE,
   mediaExtensions,
   mediaFormats,
-  videoFormats,
-  audioFormats,
+  MP4BOX_MODE_DEMUX_ALL,
+  MP4BOX_MODE_IMPORT_ALL_THEN_REMOVE,
+  MP4BOX_MODE_IMPORT_SELECTED_ONLY,
   subtitleFormats,
+  trackTypeAudio,
+  trackTypeGeneral,
+  trackTypeImage,
+  trackTypeMenu,
+  trackTypeText,
+  trackTypeVideo,
+  videoFormats,
 } from "./constants.ts";
 
 const OpStringSchema = v.exactOptional(v.string());
@@ -78,6 +79,7 @@ const GeneralTrackRaw = v.pipe(
     VideoCount: IntegerSchema,
     AudioCount: IntegerSchema,
     TextCount: IntegerSchema,
+    ImageCount: OpIntegerSchema,
     MenuCount: OpIntegerSchema,
     FileExtension: v.pipe(v.string(), v.toLowerCase(), v.picklist(mediaExtensions)),
     Format: v.pipe(v.string(), v.picklist(mediaFormats)),
@@ -100,6 +102,10 @@ const GeneralTrackRaw = v.pipe(
     Encoded_Application_Name: OpStringSchema,
     Encoded_Application_Version: OpStringSchema,
     Encoded_Library: v.string(),
+    Cover: OpStringSchema,
+    Cover_Description: OpStringSchema,
+    Cover_Type: OpStringSchema,
+    Cover_Mime: OpStringSchema,
     extra: v.exactOptional(GeneralTrackExtraRaw),
   }),
   v.readonly(),
@@ -196,6 +202,7 @@ const AudioTrackExtraRaw = v.pipe(
     BedChannelCount: OpIntegerSchema,
     BedChannelConfiguration: OpStringSchema,
     Source: OpStringSchema,
+    OriginalSourceMedium: OpStringSchema,
     bsid: IntegerSchema,
     dialnorm: IntegerSchema,
     compr: OpNumberSchema,
@@ -233,6 +240,7 @@ const AudioTrackRaw = v.pipe(
     "@typeorder": OpIntegerSchema,
     StreamOrder: IntegerSchema,
     ID: IntegerSchema,
+    OriginalSourceMedium_ID: OpStringSchema,
     UniqueID: v.string(),
     Format: v.pipe(v.string(), v.picklist(audioFormats)),
     Format_Commercial_IfAny: OpStringSchema,
@@ -251,12 +259,14 @@ const AudioTrackRaw = v.pipe(
     SamplingCount: IntegerSchema,
     FrameRate: NumberSchema,
     FrameCount: IntegerSchema,
+    BitDepth: OpIntegerSchema,
     Compression_Mode: v.string(),
     Delay: NumberSchema,
     Delay_Source: v.string(),
     Video_Delay: NumberSchema,
     StreamSize: IntegerSchema,
     Title: OpStringSchema,
+    Encoded_Library: OpStringSchema,
     Language: v.string(), // en, eng, en-US, en-AU, hu, hun, hu-HU ...
     ServiceKind: OpStringSchema,
     Default: Str2BooleanSchema,
@@ -271,6 +281,7 @@ type AudioTrackRaw = v.InferOutput<typeof AudioTrackRaw>;
 const TextTrackExtraRaw = v.pipe(
   v.strictObject({
     Source: OpStringSchema,
+    OriginalSourceMedium: OpStringSchema,
   }),
   v.readonly(),
 );
@@ -283,6 +294,7 @@ const TextTrackRaw = v.pipe(
     "@typeorder": OpIntegerSchema,
     StreamOrder: IntegerSchema,
     ID: IntegerSchema,
+    OriginalSourceMedium_ID: OpIntegerSchema,
     UniqueID: v.string(),
     Format: v.pipe(v.string(), v.picklist(subtitleFormats)),
     MuxingMode: OpStringSchema,
@@ -306,6 +318,26 @@ const TextTrackRaw = v.pipe(
 
 type TextTrackRaw = v.InferOutput<typeof TextTrackRaw>;
 
+const ImageTrackRaw = v.pipe(
+  v.strictObject({
+    "@type": v.literal(trackTypeImage),
+    Type: v.string(),
+    Title: v.string(),
+    Format: v.string(),
+    MuxingMode: v.string(),
+    Width: IntegerSchema,
+    Height: IntegerSchema,
+    ColorSpace: v.string(),
+    ChromaSubsampling: v.string(),
+    BitDepth: IntegerSchema,
+    Compression_Mode: v.string(),
+    StreamSize: IntegerSchema,
+  }),
+  v.readonly(),
+);
+
+type ImageTrackRaw = v.InferOutput<typeof ImageTrackRaw>;
+
 const MenuTrackRaw = v.pipe(
   v.strictObject({
     "@type": v.literal(trackTypeMenu),
@@ -323,6 +355,7 @@ const TrackRaw = v.variant("@type", [
   AudioTrackRaw,
   TextTrackRaw,
   MenuTrackRaw,
+  ImageTrackRaw,
 ]);
 
 type TrackRaw = v.InferOutput<typeof TrackRaw>;

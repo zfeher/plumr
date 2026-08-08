@@ -8,12 +8,13 @@ import type { AudioTrack, MediaInfo, SubtitleTrack, VideoTrack } from "./types.t
 import {
   trackTypeAudio,
   trackTypeGeneral,
+  trackTypeImage,
   trackTypeMenu,
   trackTypeSubtitle,
   trackTypeText,
   trackTypeVideo,
 } from "./constants.ts";
-import { getRecommendedTracks, isAlreadySupportedByTv } from "./common.ts";
+import { getRecommendedTracks, isAlreadySupportedByTv, isDefined } from "./common.ts";
 import { MediaInfoRaw } from "./schemas.ts";
 
 // oxlint-disable-next-line typescript/strict-void-return
@@ -167,8 +168,11 @@ export async function getMediaInfo(
           } satisfies SubtitleTrack;
         }
 
+        if (rawTrack["@type"] === trackTypeImage) return null;
+
         throw new Error(`Unsupported track type (${rawTrack["@type"]}).`);
       })
+      .filter(isDefined)
       // note: just in case :)
       //  we sort by stream order to have the same order like medi info orders tracks
       .toSorted((trackA, trackB) => {
