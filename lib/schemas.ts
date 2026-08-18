@@ -184,7 +184,7 @@ const VideoTrackRaw = v.pipe(
     MasteringDisplay_Luminance: OpStringSchema,
     MasteringDisplay_Luminance_Source: OpStringSchema,
     MasteringDisplay_Luminance_Min: OpNumberSchema,
-    MasteringDisplay_Luminance_Max: OpIntegerSchema,
+    MasteringDisplay_Luminance_Max: OpNumberSchema,
     MaxCLL: OpIntegerSchema,
     MaxCLL_Source: OpStringSchema,
     MaxFALL: OpIntegerSchema,
