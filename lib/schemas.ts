@@ -166,6 +166,7 @@ const VideoTrackRaw = v.pipe(
     Encoded_Library_Version: OpStringSchema,
     Encoded_Library_Settings: OpStringSchema,
     Language: OpStringSchema,
+    ServiceKind: OpStringSchema,
     Default: Str2BooleanSchema,
     Forced: Str2BooleanSchema,
     BufferSize: OpIntegerSchema,
